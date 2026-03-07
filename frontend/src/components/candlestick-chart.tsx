@@ -253,24 +253,24 @@ export function CandlestickChart({
             borderColor: COLORS.border,
           }}
         >
-          <div className="text-[var(--muted)] mb-1">{tooltip.candle.datetime}</div>
+          <div className="text-(--muted) mb-1">{tooltip.candle.datetime}</div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-            <span className="text-[var(--muted)]">O:</span>
+            <span className="text-(--muted)">O:</span>
             <span>{tooltip.candle.open}</span>
-            <span className="text-[var(--muted)]">H:</span>
+            <span className="text-(--muted)">H:</span>
             <span>{tooltip.candle.high}</span>
-            <span className="text-[var(--muted)]">L:</span>
+            <span className="text-(--muted)">L:</span>
             <span>{tooltip.candle.low}</span>
-            <span className="text-[var(--muted)]">C:</span>
+            <span className="text-(--muted)">C:</span>
             <span>{tooltip.candle.close}</span>
           </div>
           {tooltip.patterns.length > 0 && (
-            <div className="mt-1 pt-1 border-t border-[var(--border)] max-w-[200px] flex flex-col gap-1">
+            <div className="mt-1 pt-1 border-t border-(--border) max-w-[200px] flex flex-col gap-1">
               {tooltip.patterns.map((p, idx) => (
                 <div key={idx} className="flex flex-col gap-0.5">
-                  <div className="text-[var(--accent)] font-medium leading-none">{p.pattern}</div>
+                  <div className="text-(--accent) font-medium leading-none">{p.pattern}</div>
                   {p.inference && (
-                    <div className="text-[9px] text-[var(--muted)] leading-tight whitespace-normal">
+                    <div className="text-[9px] text-(--muted) leading-tight whitespace-normal">
                       {p.inference}
                     </div>
                   )}

@@ -22,7 +22,7 @@ const COLORS = {
 };
 
 export function GreeksSummary({ data }: { data: any }) {
-  if (!data?.data?.length) return <div className="text-[var(--muted)] text-center py-4">No data</div>;
+  if (!data?.data?.length) return <div className="text-(--muted) text-center py-4">No data</div>;
 
   const rows = data.data;
   // Find ATM or nearest-to-ATM strike
@@ -43,17 +43,17 @@ export function GreeksSummary({ data }: { data: any }) {
 
   return (
     <div className="space-y-1.5 text-[10px]">
-      <div className="flex items-center justify-between text-[var(--muted)] font-mono">
+      <div className="flex items-center justify-between text-(--muted) font-mono">
         <span>ATM {atm.strike}</span>
         <span>{atm.T_days?.toFixed(1)}d to exp</span>
       </div>
       <div className="grid grid-cols-3 gap-x-2 gap-y-0.5 font-mono">
-        <span className="text-[var(--muted)]"></span>
+        <span className="text-(--muted)"></span>
         <span className="text-[#22c55e] text-right">CE</span>
         <span className="text-[#ef4444] text-right">PE</span>
         {greeks.map((g) => (
           <>
-            <span key={g.label} className="text-[var(--muted)]">{g.label}</span>
+            <span key={g.label} className="text-(--muted)">{g.label}</span>
             <span className="text-right">{g.ce != null ? (typeof g.ce === "number" ? g.ce.toFixed(4) : g.ce) : "—"}</span>
             <span className="text-right">{g.pe != null ? (typeof g.pe === "number" ? g.pe.toFixed(4) : g.pe) : "—"}</span>
           </>
@@ -92,21 +92,21 @@ export function IVSmileChart({ data, height = "100%" }: { data: any; height?: st
 
 export function ParityList({ data }: { data: any }) {
   if (!data?.opportunities?.length) {
-    return <div className="text-[var(--muted)] text-center py-4 text-[10px]">No arbitrage ({data?.threshold ?? 5}pt threshold)</div>;
+    return <div className="text-(--muted) text-center py-4 text-[10px]">No arbitrage ({data?.threshold ?? 5}pt threshold)</div>;
   }
 
   const opps = data.opportunities.slice(0, 8);
 
   return (
     <div className="space-y-1 text-[10px] font-mono overflow-y-auto hidden-scrollbar">
-      <div className="flex items-center justify-between text-[var(--muted)]">
+      <div className="flex items-center justify-between text-(--muted)">
         <span>{data.arbitrage_count} opportunities</span>
         <span>threshold: {data.threshold}pts</span>
       </div>
       {opps.map((o: any, i: number) => (
         <div
           key={i}
-          className="flex items-center justify-between gap-2 px-1.5 py-1 rounded border border-[var(--border)] bg-[var(--bg)]"
+          className="flex items-center justify-between gap-2 px-1.5 py-1 rounded border border-(--border) bg-(--bg)"
         >
           <div className="flex items-center gap-1.5">
             <span

@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   const { messages }: { messages: Message[] } = await req.json();
 
   const result = await streamText({
-    model: openrouter.chat("google/gemini-2.5-pro"),
+    model: openrouter.chat("google/gemini-2.5-pro") as any,
     system: SYSTEM_PROMPT,
     messages: messages as any,
     maxSteps: 5,

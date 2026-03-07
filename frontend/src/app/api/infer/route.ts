@@ -16,10 +16,10 @@ export async function POST(req: Request) {
   const tasks = panels.map(async (panel) => {
     try {
       const { text } = await generateText({
-        model: openrouter.chat("arcee-ai/trinity-large-preview:free"),
+        model: openrouter.chat("arcee-ai/trinity-large-preview:free") as any,
         system: SYSTEM,
         prompt: `Dashboard panel: "${panel.title}"\n\nData:\n${panel.summary}`,
-        maxOutputTokens: 120,
+        maxTokens: 120,
       });
       results[panel.id] = text.trim();
     } catch {

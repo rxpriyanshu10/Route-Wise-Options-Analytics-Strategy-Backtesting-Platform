@@ -31,7 +31,7 @@ export default function ChatPage() {
   ];
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[var(--bg)] text-xs">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-(--bg) text-xs">
       <Nav />
       <div
         ref={scrollRef}
@@ -40,11 +40,11 @@ export default function ChatPage() {
         {/* Empty state */}
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center py-20 m-auto">
-            <div className="w-10 h-10 rounded-xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-center mb-4">
-              <Zap size={18} className="text-[var(--muted)]" />
+            <div className="w-10 h-10 rounded-xl bg-(--card) border border-(--border) flex items-center justify-center mb-4">
+              <Zap size={18} className="text-(--muted)" />
             </div>
             <h2 className="text-base font-semibold tracking-tight mb-1">Options Analytics</h2>
-            <p className="text-[var(--muted)] text-xs max-w-sm mb-6">
+            <p className="text-(--muted) text-xs max-w-sm mb-6">
               Ask questions about NIFTY options data with strike-level analysis.
             </p>
             <div className="flex flex-col gap-2 w-full max-w-sm">
@@ -52,7 +52,7 @@ export default function ChatPage() {
                 <button
                   key={prompt}
                   onClick={() => sendMessage({ text: prompt })}
-                  className="text-left px-3 py-2.5 rounded-lg border border-[var(--border)] bg-[var(--card)] hover:border-[var(--ring)] hover:bg-[var(--card-hover)] transition-all text-[var(--muted)] hover:text-[var(--fg)] cursor-pointer text-xs"
+                  className="text-left px-3 py-2.5 rounded-lg border border-(--border) bg-(--card) hover:border-(--ring) hover:bg-(--card-hover) transition-all text-(--muted) hover:text-(--fg) cursor-pointer text-xs"
                 >
                   {prompt}
                 </button>
@@ -67,7 +67,7 @@ export default function ChatPage() {
             <div key={message.id}>
               {message.role === "user" ? (
                 <div className="flex justify-end">
-                  <div className="bg-[var(--border)] text-[var(--fg)] rounded-2xl rounded-br-md px-4 py-2.5 max-w-[80%] text-[11px] leading-relaxed">
+                  <div className="bg-(--border) text-(--fg) rounded-2xl rounded-br-md px-4 py-2.5 max-w-[80%] text-[11px] leading-relaxed">
                     {message.parts
                       .filter((p): p is { type: "text"; text: string } => p.type === "text")
                       .map((p, i) => (
@@ -82,7 +82,7 @@ export default function ChatPage() {
                       return (
                         <div
                           key={i}
-                          className="text-[var(--fg)] leading-relaxed whitespace-pre-wrap text-[11px] opacity-90"
+                          className="text-(--fg) leading-relaxed whitespace-pre-wrap text-[11px] opacity-90"
                         >
                           {part.text}
                         </div>
@@ -97,14 +97,14 @@ export default function ChatPage() {
                         return (
                           <div
                             key={i}
-                            className="bg-[var(--card)] border border-[var(--border)] rounded-lg flex flex-col p-3 max-w-2xl w-full"
+                            className="bg-(--card) border border-(--border) rounded-lg flex flex-col p-3 max-w-2xl w-full"
                           >
                             {args.title && (
-                              <h3 className="text-[10px] font-mono uppercase tracking-widest text-[var(--muted)] mb-1.5 shrink-0 px-0.5">
+                              <h3 className="text-[10px] font-mono uppercase tracking-widest text-(--muted) mb-1.5 shrink-0 px-0.5">
                                 {args.title}
                               </h3>
                             )}
-                            <div className="w-full min-h-[300px]">
+                            <div className="w-full min-h-75">
                               <DynamicChart
                                 data={args.data}
                                 type={args.chartType}
@@ -120,7 +120,7 @@ export default function ChatPage() {
                         return (
                           <div
                             key={i}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--card)] border border-[var(--border)] text-[10px] font-mono text-[var(--muted)]"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-(--card) border border-(--border) text-[10px] font-mono text-(--muted)"
                           >
                             <Loader2 size={10} className="animate-spin" />
                             {toolName}
@@ -132,9 +132,9 @@ export default function ChatPage() {
                         return (
                           <div
                             key={i}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--card)] border border-[var(--border)] text-[10px] font-mono text-[var(--muted)] opacity-60"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-(--card) border border-(--border) text-[10px] font-mono text-(--muted) opacity-60"
                           >
-                            <Check size={10} className="text-[var(--green)]" />
+                            <Check size={10} className="text-(--green)" />
                             {toolName}
                           </div>
                         );
@@ -153,9 +153,9 @@ export default function ChatPage() {
           {isLoading && (messages.length === 0 || messages[messages.length - 1]?.role !== "assistant") && (
             <div className="flex items-center gap-2">
               <div className="flex gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--muted)] animate-pulse" style={{ animationDelay: "0ms" }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--muted)] animate-pulse" style={{ animationDelay: "150ms" }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--muted)] animate-pulse" style={{ animationDelay: "300ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-(--muted) animate-pulse" style={{ animationDelay: "0ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-(--muted) animate-pulse" style={{ animationDelay: "150ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-(--muted) animate-pulse" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           )}
@@ -163,7 +163,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-[var(--border)] p-3 max-w-3xl mx-auto w-full shrink-0 bg-[var(--bg)]">
+      <div className="border-t border-(--border) p-3 max-w-3xl mx-auto w-full shrink-0 bg-(--bg)">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -178,13 +178,13 @@ export default function ChatPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about options data..."
-            className="flex-1 bg-[var(--card)] border border-[var(--border)] rounded-lg px-3.5 py-2 text-xs text-[var(--fg)] placeholder:text-[var(--muted)] outline-none focus:border-[var(--ring)] transition-colors"
+            className="flex-1 bg-(--card) border border-(--border) rounded-lg px-3.5 py-2 text-xs text-(--fg) placeholder:text-(--muted) outline-none focus:border-(--ring) transition-colors"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="flex items-center justify-center w-9 h-9 rounded-lg bg-[var(--fg)] text-[var(--bg)] hover:opacity-90 transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+            className="flex items-center justify-center w-9 h-9 rounded-lg bg-(--fg) text-(--bg) hover:opacity-90 transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
             aria-label="Send message"
           >
             <ArrowUp size={16} />

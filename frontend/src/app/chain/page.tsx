@@ -120,42 +120,42 @@ export default function ChainPage() {
   const pcr = totalCeOi > 0 ? (totalPeOi / totalCeOi).toFixed(2) : "-";
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[var(--bg)] text-xs">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-(--bg) text-xs">
       <Nav />
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header bar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] shrink-0">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-(--border) shrink-0">
           <div className="flex items-center gap-4">
             <h1 className="text-sm font-semibold tracking-tight">Option Chain</h1>
             {data && (
-              <div className="flex items-center gap-3 text-[var(--muted)]">
+              <div className="flex items-center gap-3 text-(--muted)">
                 <span>
-                  NIFTY <span className="text-[var(--fg)] font-medium">{data.spot.toFixed(2)}</span>
+                  NIFTY <span className="text-(--fg) font-medium">{data.spot.toFixed(2)}</span>
                 </span>
-                <span className="text-[var(--border)]">|</span>
+                <span className="text-(--border)">|</span>
                 <span>
-                  ATM <span className="text-[var(--fg)] font-medium">{data.atm}</span>
+                  ATM <span className="text-(--fg) font-medium">{data.atm}</span>
                 </span>
-                <span className="text-[var(--border)]">|</span>
+                <span className="text-(--border)">|</span>
                 <span>
-                  PCR <span className={`font-medium ${Number(pcr) > 1 ? "text-[var(--red)]" : Number(pcr) < 0.7 ? "text-[var(--green)]" : "text-[var(--fg)]"}`}>{pcr}</span>
+                  PCR <span className={`font-medium ${Number(pcr) > 1 ? "text-(--red)" : Number(pcr) < 0.7 ? "text-(--green)" : "text-(--fg)"}`}>{pcr}</span>
                 </span>
-                <span className="text-[var(--border)]">|</span>
+                <span className="text-(--border)">|</span>
                 <span>{data.datetime.slice(0, 16)}</span>
               </div>
             )}
           </div>
           <div className="flex items-center gap-3">
             {/* Strike range selector */}
-            <div className="flex items-center gap-1.5 text-[var(--muted)]">
+            <div className="flex items-center gap-1.5 text-(--muted)">
               <ArrowUpDown size={12} />
               <select
                 value={strikeRange}
                 onChange={(e) => setStrikeRange(Number(e.target.value))}
-                className="appearance-none bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 pr-6 hover:border-[var(--ring)] text-[var(--fg)] cursor-pointer outline-none"
+                className="appearance-none bg-(--card) border border-(--border) rounded-md px-2 py-1 pr-6 hover:border-(--ring) text-(--fg) cursor-pointer outline-none"
               >
                 {[5, 10, 15, 20, 30].map((n) => (
-                  <option key={n} value={n} className="bg-[var(--bg)]">
+                  <option key={n} value={n} className="bg-(--bg)">
                     {n} strikes
                   </option>
                 ))}
@@ -167,17 +167,17 @@ export default function ChainPage() {
                 <select
                   value={expiry}
                   onChange={(e) => setExpiry(e.target.value)}
-                  className="appearance-none bg-[var(--card)] border border-[var(--border)] rounded-md px-3 py-1 pr-7 hover:border-[var(--ring)] text-[var(--fg)] cursor-pointer outline-none"
+                  className="appearance-none bg-(--card) border border-(--border) rounded-md px-3 py-1 pr-7 hover:border-(--ring) text-(--fg) cursor-pointer outline-none"
                 >
                   {overview.expiries.map((e) => (
-                    <option key={e} value={e} className="bg-[var(--bg)]">
+                    <option key={e} value={e} className="bg-(--bg)">
                       {e}
                     </option>
                   ))}
                 </select>
                 <ChevronDown
                   size={12}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--muted)]"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-(--muted)"
                 />
               </div>
             )}
@@ -194,46 +194,46 @@ export default function ChainPage() {
               </div>
             </div>
           ) : !data?.chain.length ? (
-            <div className="flex items-center justify-center h-full text-[var(--muted)]">
+            <div className="flex items-center justify-center h-full text-(--muted)">
               No data available
             </div>
           ) : (
             <table className="w-full border-collapse text-[11px] font-mono">
               {/* Header */}
               <thead className="sticky top-0 z-10">
-                <tr className="bg-[var(--bg)]">
+                <tr className="bg-(--bg)">
                   {/* CE group header */}
                   <th
                     colSpan={CE_COLS.length}
-                    className="text-center py-1.5 text-[10px] uppercase tracking-widest font-medium text-[var(--blue)] border-b border-[var(--border)]"
+                    className="text-center py-1.5 text-[10px] uppercase tracking-widest font-medium text-(--blue) border-b border-(--border)"
                   >
                     Calls
                   </th>
-                  <th className="border-b border-[var(--border)] bg-[var(--bg)]" />
+                  <th className="border-b border-(--border) bg-(--bg)" />
                   {/* PE group header */}
                   <th
                     colSpan={PE_COLS.length}
-                    className="text-center py-1.5 text-[10px] uppercase tracking-widest font-medium text-[var(--red)] border-b border-[var(--border)]"
+                    className="text-center py-1.5 text-[10px] uppercase tracking-widest font-medium text-(--red) border-b border-(--border)"
                   >
                     Puts
                   </th>
                 </tr>
-                <tr className="bg-[var(--card)] border-b border-[var(--border)]">
+                <tr className="bg-(--card) border-b border-(--border)">
                   {CE_COLS.map((col) => (
                     <th
                       key={col.key}
-                      className="px-2 py-1.5 text-right text-[9px] uppercase tracking-wider text-[var(--muted)] font-medium"
+                      className="px-2 py-1.5 text-right text-[9px] uppercase tracking-wider text-(--muted) font-medium"
                     >
                       {col.label}
                     </th>
                   ))}
-                  <th className="px-3 py-1.5 text-center text-[9px] uppercase tracking-wider text-[var(--fg)] font-semibold bg-[var(--border)] min-w-[72px]">
+                  <th className="px-3 py-1.5 text-center text-[9px] uppercase tracking-wider text-(--fg) font-semibold bg-(--border) min-w-[72px]">
                     Strike
                   </th>
                   {PE_COLS.map((col) => (
                     <th
                       key={col.key}
-                      className="px-2 py-1.5 text-right text-[9px] uppercase tracking-wider text-[var(--muted)] font-medium"
+                      className="px-2 py-1.5 text-right text-[9px] uppercase tracking-wider text-(--muted) font-medium"
                     >
                       {col.label}
                     </th>
@@ -249,7 +249,7 @@ export default function ChainPage() {
                   return (
                     <tr
                       key={row.strike}
-                      className={`border-b border-[var(--border)] transition-colors hover:bg-[var(--card-hover)] ${
+                      className={`border-b border-(--border) transition-colors hover:bg-(--card-hover) ${
                         isATM ? "bg-[#27272a]/60" : ""
                       }`}
                     >
@@ -260,10 +260,10 @@ export default function ChainPage() {
                           <td
                             key={col.key}
                             className={`px-2 py-1.5 text-right tabular-nums ${
-                              isITMCall ? "bg-[var(--blue)]/[0.04]" : ""
-                            } ${col.key === "ce_price" ? "text-[var(--fg)] font-medium" : "text-[var(--accent)]"}`}
+                              isITMCall ? "bg-(--blue)/[0.04]" : ""
+                            } ${col.key === "ce_price" ? "text-(--fg) font-medium" : "text-(--accent)"}`}
                           >
-                            {val != null ? fmt(val, col.format) : <Minus size={10} className="inline text-[var(--border)]" />}
+                            {val != null ? fmt(val, col.format) : <Minus size={10} className="inline text-(--border)" />}
                           </td>
                         );
                       })}
@@ -272,8 +272,8 @@ export default function ChainPage() {
                       <td
                         className={`px-3 py-1.5 text-center font-semibold tabular-nums ${
                           isATM
-                            ? "bg-[var(--amber)]/10 text-[var(--amber)]"
-                            : "bg-[var(--border)]/40 text-[var(--fg)]"
+                            ? "bg-(--amber)/10 text-(--amber)"
+                            : "bg-(--border)/40 text-(--fg)"
                         }`}
                       >
                         {row.strike}
@@ -286,10 +286,10 @@ export default function ChainPage() {
                           <td
                             key={col.key}
                             className={`px-2 py-1.5 text-right tabular-nums ${
-                              isITMPut ? "bg-[var(--red)]/[0.04]" : ""
-                            } ${col.key === "pe_price" ? "text-[var(--fg)] font-medium" : "text-[var(--accent)]"}`}
+                              isITMPut ? "bg-(--red)/[0.04]" : ""
+                            } ${col.key === "pe_price" ? "text-(--fg) font-medium" : "text-(--accent)"}`}
                           >
-                            {val != null ? fmt(val, col.format) : <Minus size={10} className="inline text-[var(--border)]" />}
+                            {val != null ? fmt(val, col.format) : <Minus size={10} className="inline text-(--border)" />}
                           </td>
                         );
                       })}
@@ -299,13 +299,13 @@ export default function ChainPage() {
               </tbody>
               {/* Footer totals */}
               <tfoot className="sticky bottom-0">
-                <tr className="bg-[var(--card)] border-t border-[var(--border)] font-medium">
+                <tr className="bg-(--card) border-t border-(--border) font-medium">
                   {CE_COLS.map((col) => (
                     <td key={col.key} className="px-2 py-2 text-right tabular-nums">
                       {col.key === "ce_oi" ? (
-                        <span className="text-[var(--blue)]">{fmt(totalCeOi, "int")}</span>
+                        <span className="text-(--blue)">{fmt(totalCeOi, "int")}</span>
                       ) : col.key === "ce_volume" ? (
-                        <span className="text-[var(--muted)]">
+                        <span className="text-(--muted)">
                           {fmt(filteredChain.reduce((s, r) => s + r.ce_volume, 0), "int")}
                         </span>
                       ) : (
@@ -313,15 +313,15 @@ export default function ChainPage() {
                       )}
                     </td>
                   ))}
-                  <td className="px-3 py-2 text-center text-[9px] uppercase tracking-wider text-[var(--muted)] bg-[var(--border)]/40">
+                  <td className="px-3 py-2 text-center text-[9px] uppercase tracking-wider text-(--muted) bg-(--border)/40">
                     Total
                   </td>
                   {PE_COLS.map((col) => (
                     <td key={col.key} className="px-2 py-2 text-right tabular-nums">
                       {col.key === "pe_oi" ? (
-                        <span className="text-[var(--red)]">{fmt(totalPeOi, "int")}</span>
+                        <span className="text-(--red)">{fmt(totalPeOi, "int")}</span>
                       ) : col.key === "pe_volume" ? (
-                        <span className="text-[var(--muted)]">
+                        <span className="text-(--muted)">
                           {fmt(filteredChain.reduce((s, r) => s + r.pe_volume, 0), "int")}
                         </span>
                       ) : (

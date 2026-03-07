@@ -14,8 +14,8 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="border-b border-[var(--border)] px-4 flex items-center gap-1 h-10 text-xs shrink-0 bg-[var(--bg)] w-full">
-      <span className="font-mono font-semibold tracking-tight text-sm mr-4 bg-clip-text text-transparent bg-gradient-to-r from-[var(--fg)] to-[var(--muted)]">
+    <nav className="border-b border-(--border) px-4 flex items-center gap-1 h-10 text-xs shrink-0 bg-(--bg) w-full">
+      <span className="font-mono font-semibold tracking-tight text-sm mr-4 bg-clip-text text-transparent bg-linear-to-r from-(--fg) to-(--muted)">
         CodeForge
       </span>
       <div className="flex items-center gap-0.5">
@@ -28,8 +28,8 @@ export function Nav() {
               href={l.href}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
                 active
-                  ? "bg-[var(--border)] text-[var(--fg)]"
-                  : "text-[var(--muted)] hover:text-[var(--fg)] hover:bg-[var(--card-hover)]"
+                  ? "bg-(--border) text-(--fg)"
+                  : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
               }`}
             >
               <Icon size={14} strokeWidth={active ? 2 : 1.5} />

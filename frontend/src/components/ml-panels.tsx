@@ -25,8 +25,8 @@ export function AnomalyTimeline({ data, height = "100%" }: { data: any; height?:
   return (
     <div className="flex flex-col gap-1.5 h-full">
       <div className="flex items-center gap-2 shrink-0">
-        <span className="text-[var(--red)]">{anomaly_count}</span>
-        <span className="text-[var(--muted)]">/ {total_snapshots} anomalies</span>
+        <span className="text-(--red)">{anomaly_count}</span>
+        <span className="text-(--muted)">/ {total_snapshots} anomalies</span>
       </div>
       <div className="flex-1 min-h-0 relative">
         <div className="absolute inset-0">
@@ -68,18 +68,18 @@ export function AnomalyTimeline({ data, height = "100%" }: { data: any; height?:
 
 // --- Anomaly List ---
 export function AnomalyList({ anomalies }: { anomalies: any[] }) {
-  if (!anomalies || anomalies.length === 0) return <p className="text-[var(--muted)]">No anomalies detected</p>;
+  if (!anomalies || anomalies.length === 0) return <p className="text-(--muted)">No anomalies detected</p>;
 
   return (
     <div className="space-y-1 overflow-y-auto max-h-full hidden-scrollbar">
       {anomalies.slice(0, 8).map((a: any, i: number) => (
         <div
           key={i}
-          className="flex items-center gap-2 px-1.5 py-1 rounded bg-[var(--bg)] border border-[var(--border)]"
+          className="flex items-center gap-2 px-1.5 py-1 rounded bg-(--bg) border border-(--border)"
         >
-          <span className="text-[var(--red)] font-mono">{a.anomaly_score.toFixed(0)}</span>
-          <span className="text-[var(--muted)] flex-1 truncate">{a.datetime.slice(5, 16)}</span>
-          <span className="text-[var(--muted)]">
+          <span className="text-(--red) font-mono">{a.anomaly_score.toFixed(0)}</span>
+          <span className="text-(--muted) flex-1 truncate">{a.datetime.slice(5, 16)}</span>
+          <span className="text-(--muted)">
             PCR {a.pcr_oi.toFixed(2)} &middot; OI {a.oi_change_pct > 0 ? "+" : ""}{a.oi_change_pct.toFixed(1)}%
           </span>
         </div>

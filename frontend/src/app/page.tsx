@@ -161,7 +161,7 @@ export default function Dashboard() {
   }, [anomalyData, pcrData, oiData, requestInferences]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[var(--bg)] text-xs">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-(--bg) text-xs">
       <Nav />
       <main className="flex-1 p-2 w-full flex flex-col gap-2 overflow-hidden">
         {/* Header */}
@@ -169,7 +169,7 @@ export default function Dashboard() {
           <div className="flex items-baseline gap-3">
             <h1 className="text-base font-semibold tracking-tight">Terminal</h1>
             {overview && (
-              <span className="text-[var(--muted)] text-[11px]">
+              <span className="text-(--muted) text-[11px]">
                 {overview.symbols.join(", ")} · {overview.total_rows.toLocaleString()} pts
               </span>
             )}
@@ -179,15 +179,15 @@ export default function Dashboard() {
               <select
                 value={expiry}
                 onChange={(e) => setExpiry(e.target.value)}
-                className="appearance-none bg-[var(--card)] border border-[var(--border)] rounded-md px-3 py-1.5 pr-7 hover:border-[var(--ring)] text-[var(--fg)] cursor-pointer outline-none text-xs"
+                className="appearance-none bg-(--card) border border-(--border) rounded-md px-3 py-1.5 pr-7 hover:border-(--ring) text-(--fg) cursor-pointer outline-none text-xs"
               >
                 {overview.expiries.map((e) => (
-                  <option key={e} value={e} className="bg-[var(--bg)]">
+                  <option key={e} value={e} className="bg-(--bg)">
                     {e}
                   </option>
                 ))}
               </select>
-              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--muted)]" />
+              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-(--muted)" />
             </div>
           )}
         </div>
@@ -195,11 +195,11 @@ export default function Dashboard() {
         {/* Main grid */}
         <div className="flex-1 flex gap-2 h-full overflow-hidden">
           {/* Left Column: Candlestick Chart */}
-          <div className="flex-[3] flex flex-col gap-2 min-w-0">
+          <div className="flex-3 flex flex-col gap-2 min-w-0">
             {candleData ? (
               <ChartCard title="" className="flex-1">
                 <div className="flex items-center justify-between mb-2 shrink-0 px-1">
-                  <h3 className="font-mono text-[var(--muted)] text-[10px] uppercase tracking-wider">
+                  <h3 className="font-mono text-(--muted) text-[10px] uppercase tracking-wider">
                     NIFTY Spot / Candles
                   </h3>
                   <div className="flex items-center gap-1">
@@ -209,8 +209,8 @@ export default function Dashboard() {
                         onClick={() => setCandleInterval(iv)}
                         className={`px-2 py-0.5 rounded text-[10px] font-mono cursor-pointer transition-colors ${
                           candleInterval === iv
-                            ? "bg-[var(--border)] text-[var(--fg)]"
-                            : "text-[var(--muted)] hover:text-[var(--fg)] hover:bg-[var(--card-hover)]"
+                            ? "bg-(--border) text-(--fg)"
+                            : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
                         }`}
                       >
                         {iv === "15T" ? "15m" : iv === "30T" ? "30m" : iv}
@@ -256,8 +256,8 @@ export default function Dashboard() {
                     onClick={() => setRightPanelTab(tab.key as any)}
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors cursor-pointer ${
                       active
-                        ? "bg-[var(--border)] text-[var(--fg)]"
-                        : "text-[var(--muted)] hover:text-[var(--fg)] hover:bg-[var(--card-hover)]"
+                        ? "bg-(--border) text-(--fg)"
+                        : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
                     }`}
                   >
                     <Icon size={12} strokeWidth={active ? 2 : 1.5} />
@@ -271,11 +271,11 @@ export default function Dashboard() {
             <div className="flex-1 grid grid-cols-2 auto-rows-fr gap-2 min-w-0 overflow-y-auto hidden-scrollbar">
               {rightPanelTab === "ml" && (
                 <>
-                  <ChartCard title="Anomalies" insight={insights.anomalies} insightLoading={insightsLoading}>
+                  <ChartCard title="Anomalies" className="col-span-2" insight={insights.anomalies} insightLoading={insightsLoading}>
                     {anomalyData ? (
                       <AnomalyList anomalies={anomalyData?.anomalies} />
                     ) : (
-                      <div className="skeleton h-full min-h-[60px]" />
+                      <div className="skeleton h-full min-h-15" />
                     )}
                   </ChartCard>
                   {anomalyData ? (
@@ -296,7 +296,7 @@ export default function Dashboard() {
                     {greeksData ? (
                       <GreeksSummary data={greeksData} />
                     ) : (
-                      <div className="skeleton h-full min-h-[60px]" />
+                      <div className="skeleton h-full min-h-15" />
                     )}
                   </ChartCard>
                   <ChartCard title="IV Smile" insight={insights.ivSmile} insightLoading={insightsLoading}>
@@ -305,14 +305,14 @@ export default function Dashboard() {
                         <IVSmileChart data={greeksData} height="100%" />
                       </div>
                     ) : (
-                      <div className="skeleton h-full min-h-[60px]" />
+                      <div className="skeleton h-full min-h-15" />
                     )}
                   </ChartCard>
                   <ChartCard title="Arbitrage" insight={insights.parity} insightLoading={insightsLoading}>
                     {parityData ? (
                       <ParityList data={parityData} />
                     ) : (
-                      <div className="skeleton h-full min-h-[60px]" />
+                      <div className="skeleton h-full min-h-15" />
                     )}
                   </ChartCard>
                   <ChartCard title="Mispricing">
@@ -321,7 +321,7 @@ export default function Dashboard() {
                         <MispricingChart data={parityData} height="100%" />
                       </div>
                     ) : (
-                      <div className="skeleton h-full min-h-[60px]" />
+                      <div className="skeleton h-full min-h-15" />
                     )}
                   </ChartCard>
                 </>

@@ -191,7 +191,7 @@ export function DynamicChart({
 
   return (
     <div>
-      {title && <p className="text-sm font-medium text-[var(--muted)] mb-2">{title}</p>}
+      {title && <p className="text-sm font-medium text-(--muted) mb-2">{title}</p>}
       <ResponsiveContainer width="100%" height={300}>
         <ChartComponent data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />

@@ -49,7 +49,7 @@ const IMPACT_LABELS: Record<string, string> = {
 export function PatternSummaryBar({ summary }: { summary: PatternSummary }) {
   return (
     <div className="flex gap-4 items-center text-sm">
-      <span className="text-[var(--muted)]">
+      <span className="text-(--muted)">
         {summary.total_patterns} pattern{summary.total_patterns !== 1 ? "s" : ""} detected
       </span>
       {summary.bullish > 0 && (
@@ -73,17 +73,17 @@ export function PatternCard({ pattern }: { pattern: Pattern }) {
       <div className="flex items-start justify-between mb-2">
         <div>
           <h4 className={`font-semibold text-sm ${style.text}`}>{pattern.pattern}</h4>
-          <span className="text-xs text-[var(--muted)]">{pattern.datetime}</span>
+          <span className="text-xs text-(--muted)">{pattern.datetime}</span>
         </div>
         <div className="flex gap-2 items-center">
           <span className={`text-xs px-2 py-0.5 rounded-full ${style.badge}`}>
             {pattern.type === "multi" ? "Multi-candle" : "Single"}
           </span>
-          <span className="text-xs text-[var(--muted)]">{pattern.confidence}%</span>
+          <span className="text-xs text-(--muted)">{pattern.confidence}%</span>
         </div>
       </div>
 
-      <p className="text-xs text-[var(--muted)] mb-2">{pattern.description}</p>
+      <p className="text-xs text-(--muted) mb-2">{pattern.description}</p>
 
       <div className="bg-black/20 rounded p-3 mb-2">
         <p className="text-xs leading-relaxed">{pattern.inference}</p>
@@ -118,7 +118,7 @@ export function PatternCard({ pattern }: { pattern: Pattern }) {
 export function PatternList({ patterns }: { patterns: Pattern[] }) {
   if (patterns.length === 0) {
     return (
-      <div className="text-sm text-[var(--muted)] text-center py-8">
+      <div className="text-sm text-(--muted) text-center py-8">
         No candlestick patterns detected in this data range.
       </div>
     );

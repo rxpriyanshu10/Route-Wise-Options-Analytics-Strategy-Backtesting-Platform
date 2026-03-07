@@ -47,47 +47,47 @@ export function OptionChainTable({ data }: { data: OptionChainData }) {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-4 text-[10px] font-mono text-[var(--muted)]">
+        <div className="flex items-center gap-4 text-[10px] font-mono text-(--muted)">
           <span>
-            SPOT <span className="text-[var(--fg)]">{data.spot?.toFixed(2)}</span>
+            SPOT <span className="text-(--fg)">{data.spot?.toFixed(2)}</span>
           </span>
           <span>
-            ATM <span className="text-[var(--fg)]">{data.atm}</span>
+            ATM <span className="text-(--fg)">{data.atm}</span>
           </span>
           <span>{data.datetime}</span>
         </div>
         <button
           onClick={() => setShowGreeks(!showGreeks)}
-          className="text-[10px] font-mono px-2 py-0.5 border border-[var(--border)] rounded text-[var(--muted)] hover:text-[var(--fg)] hover:border-[var(--muted)] transition-colors"
+          className="text-[10px] font-mono px-2 py-0.5 border border-(--border) rounded text-(--muted) hover:text-(--fg) hover:border-(--muted) transition-colors"
         >
           {showGreeks ? "Hide Greeks" : "Show Greeks"}
         </button>
       </div>
 
-      <div className="overflow-x-auto border border-[var(--border)] rounded">
+      <div className="overflow-x-auto border border-(--border) rounded">
         <table className="w-full text-[10px] font-mono border-collapse">
           <thead>
-            <tr className="text-[var(--muted)] uppercase tracking-widest">
-              <th colSpan={showGreeks ? 6 : 4} className="text-center py-1.5 px-2 border-b border-r border-[var(--border)] bg-[#0d1f0d]/30 text-green-500/70">
+            <tr className="text-(--muted) uppercase tracking-widest">
+              <th colSpan={showGreeks ? 6 : 4} className="text-center py-1.5 px-2 border-b border-r border-(--border) bg-[#0d1f0d]/30 text-green-500/70">
                 Calls
               </th>
-              <th className="py-1.5 px-2 border-b border-[var(--border)] bg-[var(--card)]">
+              <th className="py-1.5 px-2 border-b border-(--border) bg-(--card)">
                 Strike
               </th>
-              <th colSpan={showGreeks ? 6 : 4} className="text-center py-1.5 px-2 border-b border-l border-[var(--border)] bg-[#1f0d0d]/30 text-red-500/70">
+              <th colSpan={showGreeks ? 6 : 4} className="text-center py-1.5 px-2 border-b border-l border-(--border) bg-[#1f0d0d]/30 text-red-500/70">
                 Puts
               </th>
             </tr>
-            <tr className="text-[var(--muted)] border-b border-[var(--border)]">
+            <tr className="text-(--muted) border-b border-(--border)">
               {showGreeks && <th className="py-1 px-1.5 text-right">Delta</th>}
               <th className="py-1 px-1.5 text-right">IV%</th>
               <th className="py-1 px-1.5 text-right">Vol</th>
               <th className="py-1 px-1.5 text-right">OI</th>
-              <th className="py-1 px-1.5 text-right border-r border-[var(--border)]">Price</th>
-              {showGreeks && <th className="py-1 px-1.5 text-right border-r border-[var(--border)]">Gamma</th>}
-              <th className="py-1 px-2 text-center bg-[var(--card)]">Strike</th>
-              {showGreeks && <th className="py-1 px-1.5 text-left border-l border-[var(--border)]">Theta</th>}
-              <th className="py-1 px-1.5 text-left border-l border-[var(--border)]">Price</th>
+              <th className="py-1 px-1.5 text-right border-r border-(--border)">Price</th>
+              {showGreeks && <th className="py-1 px-1.5 text-right border-r border-(--border)">Gamma</th>}
+              <th className="py-1 px-2 text-center bg-(--card)">Strike</th>
+              {showGreeks && <th className="py-1 px-1.5 text-left border-l border-(--border)">Theta</th>}
+              <th className="py-1 px-1.5 text-left border-l border-(--border)">Price</th>
               <th className="py-1 px-1.5 text-left">OI</th>
               <th className="py-1 px-1.5 text-left">Vol</th>
               <th className="py-1 px-1.5 text-left">IV%</th>
@@ -105,19 +105,19 @@ export function OptionChainTable({ data }: { data: OptionChainData }) {
               return (
                 <tr
                   key={row.strike}
-                  className={`border-b border-[var(--border)] hover:bg-[var(--card)] transition-colors ${
-                    isATM ? "bg-[var(--card)]" : ""
+                  className={`border-b border-(--border) hover:bg-(--card) transition-colors ${
+                    isATM ? "bg-(--card)" : ""
                   }`}
                 >
                   {showGreeks && (
-                    <td className="py-1 px-1.5 text-right text-[var(--muted)]">
+                    <td className="py-1 px-1.5 text-right text-(--muted)">
                       {fmt(row.ce_delta, 3)}
                     </td>
                   )}
-                  <td className="py-1 px-1.5 text-right text-[var(--muted)]">
+                  <td className="py-1 px-1.5 text-right text-(--muted)">
                     {fmt(row.ce_iv, 1)}
                   </td>
-                  <td className="py-1 px-1.5 text-right text-[var(--muted)]">
+                  <td className="py-1 px-1.5 text-right text-(--muted)">
                     {fmtInt(row.ce_volume)}
                   </td>
                   <td className="py-1 px-1.5 text-right relative">
@@ -128,34 +128,34 @@ export function OptionChainTable({ data }: { data: OptionChainData }) {
                     <span className="relative">{fmtInt(row.ce_oi)}</span>
                   </td>
                   <td
-                    className={`py-1 px-1.5 text-right border-r border-[var(--border)] font-medium ${
-                      isITM_CE ? "text-green-400" : "text-[var(--fg)]"
+                    className={`py-1 px-1.5 text-right border-r border-(--border) font-medium ${
+                      isITM_CE ? "text-green-400" : "text-(--fg)"
                     }`}
                   >
                     {fmt(row.ce_price)}
                   </td>
                   {showGreeks && (
-                    <td className="py-1 px-1.5 text-right text-[var(--muted)] border-r border-[var(--border)]">
+                    <td className="py-1 px-1.5 text-right text-(--muted) border-r border-(--border)">
                       {fmt(row.gamma, 4)}
                     </td>
                   )}
                   <td
-                    className={`py-1 px-2 text-center font-semibold bg-[var(--card)] ${
+                    className={`py-1 px-2 text-center font-semibold bg-(--card) ${
                       isATM
                         ? "text-yellow-400"
-                        : "text-[var(--fg)]"
+                        : "text-(--fg)"
                     }`}
                   >
                     {row.strike}
                   </td>
                   {showGreeks && (
-                    <td className="py-1 px-1.5 text-left text-[var(--muted)] border-l border-[var(--border)]">
+                    <td className="py-1 px-1.5 text-left text-(--muted) border-l border-(--border)">
                       {fmt(row.theta, 2)}
                     </td>
                   )}
                   <td
-                    className={`py-1 px-1.5 text-left border-l border-[var(--border)] font-medium ${
-                      isITM_PE ? "text-red-400" : "text-[var(--fg)]"
+                    className={`py-1 px-1.5 text-left border-l border-(--border) font-medium ${
+                      isITM_PE ? "text-red-400" : "text-(--fg)"
                     }`}
                   >
                     {fmt(row.pe_price)}
@@ -167,14 +167,14 @@ export function OptionChainTable({ data }: { data: OptionChainData }) {
                     />
                     <span className="relative">{fmtInt(row.pe_oi)}</span>
                   </td>
-                  <td className="py-1 px-1.5 text-left text-[var(--muted)]">
+                  <td className="py-1 px-1.5 text-left text-(--muted)">
                     {fmtInt(row.pe_volume)}
                   </td>
-                  <td className="py-1 px-1.5 text-left text-[var(--muted)]">
+                  <td className="py-1 px-1.5 text-left text-(--muted)">
                     {fmt(row.pe_iv, 1)}
                   </td>
                   {showGreeks && (
-                    <td className="py-1 px-1.5 text-left text-[var(--muted)]">
+                    <td className="py-1 px-1.5 text-left text-(--muted)">
                       {fmt(row.pe_delta, 3)}
                     </td>
                   )}
