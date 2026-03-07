@@ -16,6 +16,7 @@ import { AnomalyTimeline, AnomalyList } from "@/components/ml-panels";
 import { GreeksSummary, IVSmileChart, ParityList, MispricingChart } from "@/components/greeks-panels";
 import { useInferences } from "@/hooks/use-inferences";
 import { fetchAPI } from "@/lib/api";
+import { ActivityHeatmap } from "@/components/activity-heatmap";
 import { Activity, TrendingUp, BarChart3, ChevronDown } from "lucide-react";
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
 
@@ -65,6 +66,8 @@ export default function Dashboard() {
   const [anomalyData, setAnomalyData] = useState<any>(null);
   const [greeksData, setGreeksData] = useState<any>(null);
   const [parityData, setParityData] = useState<any>(null);
+  const [heatmapData, setHeatmapData] = useState<any>(null);
+  const [heatmapMetric, setHeatmapMetric] = useState("oi_CE");
   const [rightPanelTab, setRightPanelTab] = useState<"overview" | "greeks" | "ml">("overview");
   const { insights, loading: insightsLoading, fetchInferences } = useInferences();
 
@@ -90,6 +93,7 @@ export default function Dashboard() {
     setAnomalyData(null);
     setGreeksData(null);
     setParityData(null);
+    setHeatmapData(null);
 
     const params = { expiry };
 
@@ -103,7 +107,8 @@ export default function Dashboard() {
     fetchAPI("/api/anomalies", params).then(setAnomalyData).catch(console.error);
     fetchAPI("/api/greeks", params).then(setGreeksData).catch(console.error);
     fetchAPI("/api/parity-arbitrage", params).then(setParityData).catch(console.error);
-  }, [expiry, candleInterval]);
+    fetchAPI("/api/activity-heatmap", { ...params, metric: heatmapMetric }).then(setHeatmapData).catch(console.error);
+  }, [expiry, candleInterval, heatmapMetric]);
 
   const requestInferences = useCallback(() => {
     const panels: { id: string; title: string; summary: string }[] = [];
@@ -398,6 +403,48 @@ export default function Dashboard() {
                     ) : (
                       <ChartCardSkeleton className="col-span-2" />
                     )}
+                    <ChartCard title="" className="col-span-2">
+                      <div className="flex items-center justify-between mb-1.5 shrink-0">
+                        <h3 className="font-mono text-(--muted) text-[10px] uppercase tracking-wider">
+                          Activity Heatmap
+                        </h3>
+                        <div className="flex items-center gap-1">
+                          {([
+                            { key: "oi_CE", label: "OI CE" },
+                            { key: "oi_PE", label: "OI PE" },
+                            { key: "volume_CE", label: "Vol CE" },
+                            { key: "volume_PE", label: "Vol PE" },
+                          ] as const).map((m) => (
+                            <button
+                              key={m.key}
+                              onClick={() => setHeatmapMetric(m.key)}
+                              className={`px-2 py-0.5 rounded text-[10px] font-mono cursor-pointer transition-colors ${
+                                heatmapMetric === m.key
+                                  ? "bg-(--border) text-(--fg)"
+                                  : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
+                              }`}
+                            >
+                              {m.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-h-0 relative">
+                        <div className="absolute inset-0">
+                          {heatmapData?.data?.length ? (
+                            <ActivityHeatmap
+                              data={heatmapData.data}
+                              atm={heatmapData.atm}
+                              label={heatmapMetric.startsWith("oi") ? "OI" : "Volume"}
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full">
+                              <div className="skeleton w-full h-full rounded" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </ChartCard>
                   </>
                 )}
               </div>

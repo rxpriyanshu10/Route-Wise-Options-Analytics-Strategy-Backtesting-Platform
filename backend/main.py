@@ -957,3 +957,50 @@ def get_parity_arbitrage(
     }
     rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
     return response
+
+
+@app.get("/api/activity-heatmap")
+def get_activity_heatmap(
+    expiry: Optional[str] = None,
+    metric: str = Query("oi_CE", description="Metric: oi_CE, oi_PE, volume_CE, volume_PE"),
+):
+    """Activity heatmap: metric values across strikes and time snapshots."""
+    cache_key = f"heatmap:{expiry or 'all'}:{metric}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    filtered = df.copy()
+    if expiry:
+        filtered = filtered[filtered["expiry"] == expiry]
+
+    if metric not in ("oi_CE", "oi_PE", "volume_CE", "volume_PE"):
+        return {"error": "Invalid metric"}
+
+    # Sample datetimes to keep response manageable
+    datetimes = sorted(filtered["datetime"].unique())
+    step = max(1, len(datetimes) // 60)
+    sampled_dts = datetimes[::step]
+    filtered = filtered[filtered["datetime"].isin(sampled_dts)]
+
+    # Focus on strikes near ATM (+-12 strikes)
+    atm = filtered["ATM"].mode().iloc[0] if len(filtered) > 0 else 25000
+    strikes = sorted(filtered["strike"].unique())
+    if len(strikes) == 0:
+        return {"count": 0, "data": [], "atm": atm}
+    atm_idx = min(range(len(strikes)), key=lambda i: abs(strikes[i] - atm))
+    near_strikes = strikes[max(0, atm_idx - 12):atm_idx + 13]
+    filtered = filtered[filtered["strike"].isin(near_strikes)]
+
+    data = []
+    for _, row in filtered.iterrows():
+        val = float(row[metric])
+        data.append({
+            "datetime": str(row["datetime"]),
+            "strike": float(row["strike"]),
+            "value": val,
+        })
+
+    response = {"count": len(data), "data": data, "atm": atm, "metric": metric}
+    rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
+    return response
