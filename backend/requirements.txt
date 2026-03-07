@@ -5,3 +5,6 @@ numpy
 python-multipart
 pydantic
 scikit-learn
+redis
+python-dotenv
+scipy

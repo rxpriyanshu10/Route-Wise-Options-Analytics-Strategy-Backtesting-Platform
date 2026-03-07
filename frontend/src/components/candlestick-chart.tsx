@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo, useCallback } from "react";
+import { useRef, useState, useMemo, useCallback, useEffect } from "react";
 
 type CandleData = {
   datetime: string;
@@ -14,6 +14,7 @@ type PatternMarker = {
   datetime: string;
   pattern: string;
   signal: "bullish" | "bearish" | "neutral";
+  inference?: string;
 };
 
 const COLORS = {
@@ -36,21 +37,36 @@ const SIGNAL_COLORS: Record<string, string> = {
 export function CandlestickChart({
   data,
   patterns = [],
-  height = 400,
 }: {
   data: CandleData[];
   patterns?: PatternMarker[];
-  height?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
   const [tooltip, setTooltip] = useState<{
     x: number;
     y: number;
     candle: CandleData;
-    patternNames: string[];
+    patterns: PatternMarker[];
   } | null>(null);
 
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setDimensions({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const margin = { top: 20, right: 60, bottom: 40, left: 10 };
+  const { width, height } = dimensions;
 
   const patternMap = useMemo(() => {
     const map: Record<string, PatternMarker[]> = {};
@@ -87,8 +103,8 @@ export function CandlestickChart({
       const svg = e.currentTarget;
       const rect = svg.getBoundingClientRect();
       const x = e.clientX - rect.left;
-      const chartWidth = rect.width - margin.left - margin.right;
-      const candleWidth = chartWidth / data.length;
+      const chartWidth = Math.max(rect.width - margin.left - margin.right, 0);
+      const candleWidth = chartWidth / Math.max(data.length, 1);
       const idx = Math.floor((x - margin.left) / candleWidth);
       if (idx >= 0 && idx < data.length) {
         const candle = data[idx];
@@ -97,7 +113,7 @@ export function CandlestickChart({
           x: e.clientX - rect.left,
           y: e.clientY - rect.top,
           candle,
-          patternNames: pats.map((p) => p.pattern),
+          patterns: pats,
         });
       } else {
         setTooltip(null);
@@ -107,33 +123,34 @@ export function CandlestickChart({
   );
 
   return (
-    <div ref={containerRef} className="relative w-full" style={{ height }}>
-      <svg
-        width="100%"
-        height="100%"
-        viewBox={`0 0 800 ${height}`}
-        preserveAspectRatio="none"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => setTooltip(null)}
-        className="block"
-      >
-        {/* Grid lines */}
+    <div ref={containerRef} className="relative w-full h-full">
+      {(width > 0 && height > 0) && (
+        <svg
+          width="100%"
+          height="100%"
+          viewBox={`0 0 ${width} ${height}`}
+          preserveAspectRatio="none"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setTooltip(null)}
+          className="block"
+        >
+          {/* Grid lines */}
         {yTicks.map((tick) => {
           const y =
             margin.top +
-            ((maxPrice - tick) / priceRange) * (height - margin.top - margin.bottom);
+            ((maxPrice - tick) / Math.max(priceRange, 0.0001)) * Math.max(height - margin.top - margin.bottom, 0);
           return (
             <g key={tick}>
               <line
                 x1={margin.left}
-                x2={800 - margin.right}
+                x2={width - margin.right}
                 y1={y}
                 y2={y}
                 stroke={COLORS.grid}
                 strokeDasharray="3 3"
               />
               <text
-                x={800 - margin.right + 5}
+                x={width - margin.right + 5}
                 y={y + 4}
                 fill={COLORS.axis}
                 fontSize={10}
@@ -146,14 +163,14 @@ export function CandlestickChart({
 
         {/* Candles */}
         {data.map((candle, i) => {
-          const chartWidth = 800 - margin.left - margin.right;
+          const chartWidth = Math.max(width - margin.left - margin.right, 0);
           const candleWidth = chartWidth / data.length;
           const bodyWidth = Math.max(candleWidth * 0.6, 2);
           const x = margin.left + i * candleWidth + candleWidth / 2;
-          const chartHeight = height - margin.top - margin.bottom;
+          const chartHeight = Math.max(height - margin.top - margin.bottom, 0);
 
           const yScale = (price: number) =>
-            margin.top + ((maxPrice - price) / priceRange) * chartHeight;
+            margin.top + ((maxPrice - price) / Math.max(priceRange, 0.0001)) * chartHeight;
 
           const isBullish = candle.close >= candle.open;
           const color = isBullish ? COLORS.bullish : COLORS.bearish;
@@ -202,7 +219,7 @@ export function CandlestickChart({
 
         {/* X-axis labels */}
         {data.map((candle, i) => {
-          const chartWidth = 800 - margin.left - margin.right;
+          const chartWidth = Math.max(width - margin.left - margin.right, 0);
           const candleWidth = chartWidth / data.length;
           const x = margin.left + i * candleWidth + candleWidth / 2;
           // Show every nth label to avoid overlap
@@ -223,13 +240,14 @@ export function CandlestickChart({
           );
         })}
       </svg>
+      )}
 
       {/* Tooltip */}
       {tooltip && (
         <div
           className="absolute pointer-events-none z-10 text-xs rounded-lg border px-3 py-2"
           style={{
-            left: Math.min(tooltip.x + 10, 600),
+            left: Math.min(tooltip.x + 10, width - 120),
             top: Math.max(tooltip.y - 80, 0),
             background: COLORS.tooltip,
             borderColor: COLORS.border,
@@ -246,10 +264,17 @@ export function CandlestickChart({
             <span className="text-[var(--muted)]">C:</span>
             <span>{tooltip.candle.close}</span>
           </div>
-          {tooltip.patternNames.length > 0 && (
-            <div className="mt-1 pt-1 border-t border-[var(--border)]">
-              {tooltip.patternNames.map((p) => (
-                <div key={p} className="text-[var(--accent)]">{p}</div>
+          {tooltip.patterns.length > 0 && (
+            <div className="mt-1 pt-1 border-t border-[var(--border)] max-w-[200px] flex flex-col gap-1">
+              {tooltip.patterns.map((p, idx) => (
+                <div key={idx} className="flex flex-col gap-0.5">
+                  <div className="text-[var(--accent)] font-medium leading-none">{p.pattern}</div>
+                  {p.inference && (
+                    <div className="text-[9px] text-[var(--muted)] leading-tight whitespace-normal">
+                      {p.inference}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}

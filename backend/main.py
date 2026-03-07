@@ -5,7 +5,13 @@ import numpy as np
 from pathlib import Path
 from typing import Optional
 import json
-from ml_models import AnomalyDetector, DirectionPredictor
+import os
+from dotenv import load_dotenv
+import redis
+
+load_dotenv()
+from ml_models import AnomalyDetector
+from greeks import implied_volatility, compute_greeks, bs_call, bs_put, RISK_FREE_RATE
 
 app = FastAPI(title="CodeForge Options Analytics API")
 
@@ -18,17 +24,19 @@ app.add_middleware(
 )
 
 DATA_DIR = Path(__file__).parent / "data"
+DB_PATH = DATA_DIR / "options.db"
 
 
 def load_data() -> pd.DataFrame:
-    """Load and concatenate all CSV files."""
-    frames = []
-    for csv_file in sorted(DATA_DIR.glob("*.csv")):
-        df = pd.read_csv(csv_file)
-        frames.append(df)
-    combined = pd.concat(frames, ignore_index=True)
+    """Load data from SQLite database."""
+    import sqlite3
+    conn = sqlite3.connect(DB_PATH)
+    combined = pd.read_sql_query("SELECT * FROM options", conn)
+    conn.close()
     combined["datetime"] = pd.to_datetime(combined["datetime"])
     combined["expiry"] = pd.to_datetime(combined["expiry"])
+    # Expiry close time for Greeks T calculation (15:30 IST market close)
+    combined["expiry_close"] = combined["expiry"] + pd.Timedelta(hours=15, minutes=30)
     return combined
 
 
@@ -39,8 +47,14 @@ df = load_data()
 anomaly_detector = AnomalyDetector()
 anomaly_detector.fit(df)
 
-direction_predictor = DirectionPredictor()
-direction_predictor.fit(df)
+# Redis cache for ML results (TTL = 5 minutes)
+rcache = redis.Redis(
+    host=os.environ.get("REDIS_HOST", "localhost"),
+    port=int(os.environ.get("REDIS_PORT", "6379")),
+    db=0,
+    decode_responses=True,
+)
+ML_CACHE_TTL = 300
 
 
 @app.get("/api/overview")
@@ -595,38 +609,351 @@ def query_data(
 def get_anomalies(expiry: Optional[str] = None):
     """Detect anomalous market activity using Isolation Forest.
     Model is trained on all data but works on any expiry (uses relative features).
+    Results are cached in Redis for 5 minutes.
     """
+    cache_key = f"anomalies:{expiry or 'all'}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
     filtered = df.copy()
     if expiry:
         filtered = filtered[filtered["expiry"] == expiry]
     results = anomaly_detector.predict(filtered)
     anomalies = [r for r in results if r["is_anomaly"]]
-    return {
+    response = {
         "total_snapshots": len(results),
         "anomaly_count": len(anomalies),
         "anomalies": anomalies,
         "all": results,
     }
+    rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
+    return response
 
 
-@app.get("/api/direction")
-def get_direction(expiry: Optional[str] = None):
-    """Predict spot direction from options flow using Random Forest.
-    Model is trained on all data but generalizes to new expiries (relative features).
+@app.get("/api/greeks")
+def get_greeks(
+    expiry: Optional[str] = None,
+    datetime_str: Optional[str] = Query(None, alias="datetime"),
+    strike: Optional[float] = None,
+):
+    """Compute IV and Greeks for options at a given datetime snapshot.
+    Returns per-strike IV, BS price, Delta, Gamma, Theta, Vega, Rho for both CE and PE.
     """
+    cache_key = f"greeks:{expiry or 'all'}:{datetime_str or 'latest'}:{strike or 'all'}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
     filtered = df.copy()
     if expiry:
         filtered = filtered[filtered["expiry"] == expiry]
-    results = direction_predictor.predict(filtered)
+    if datetime_str:
+        filtered = filtered[filtered["datetime"] == datetime_str]
+    else:
+        filtered = filtered[filtered["datetime"] == filtered["datetime"].max()]
+    if strike is not None:
+        filtered = filtered[filtered["strike"] == strike]
 
-    # Summary
-    bullish = sum(1 for r in results if r["signal"] == "bullish")
-    bearish = sum(1 for r in results if r["signal"] == "bearish")
-    neutral = sum(1 for r in results if r["signal"] == "neutral")
+    # If latest snapshot is near/at expiry close (T too small for IV solver),
+    # step back to a datetime with at least ~0.5 days of T remaining
+    MIN_T_SECONDS = 0.5 * 86400  # 0.5 days in seconds
+    if len(filtered) > 0:
+        sample_row = filtered.iloc[0]
+        t_check = (sample_row["expiry_close"] - sample_row["datetime"]).total_seconds()
+        if t_check < MIN_T_SECONDS:
+            expiry_close_val = sample_row["expiry_close"]
+            # Find datetimes where T >= MIN_T_SECONDS
+            candidate_dts = df[
+                (df["expiry_close"] == expiry_close_val)
+                & ((df["expiry_close"] - df["datetime"]).dt.total_seconds() >= MIN_T_SECONDS)
+            ]["datetime"].unique()
+            if len(candidate_dts) > 0:
+                prev_dt = max(candidate_dts)
+                filtered = df.copy()
+                if expiry:
+                    filtered = filtered[filtered["expiry"] == expiry]
+                filtered = filtered[filtered["datetime"] == prev_dt]
+                if strike is not None:
+                    filtered = filtered[filtered["strike"] == strike]
 
-    return {
-        "total_predictions": len(results),
-        "summary": {"bullish": bullish, "bearish": bearish, "neutral": neutral},
-        "predictions": results,
-        "feature_importances": results[-1].get("feature_importances", []) if results else [],
+    filtered = filtered.sort_values("strike")
+    r = RISK_FREE_RATE
+
+    results = []
+    for _, row in filtered.iterrows():
+        S = float(row["spot_close"])
+        K = float(row["strike"])
+        T_days = (row["expiry_close"] - row["datetime"]).total_seconds() / 86400
+        T = T_days / 365.0
+        ce_price = float(row["CE"])
+        pe_price = float(row["PE"])
+
+        if T < 0.5 / 365:  # skip rows with < ~12 hours to expiry (IV unreliable)
+            continue
+
+        iv_ce = implied_volatility(ce_price, S, K, T, r, "CE")
+        iv_pe = implied_volatility(pe_price, S, K, T, r, "PE")
+        greeks_ce = compute_greeks(S, K, T, r, iv_ce, "CE")
+        greeks_pe = compute_greeks(S, K, T, r, iv_pe, "PE")
+
+        entry = {
+            "datetime": str(row["datetime"]),
+            "strike": K,
+            "spot_close": S,
+            "T_days": round(T_days, 2),
+            "ce_price": ce_price,
+            "pe_price": pe_price,
+            "iv_CE": round(iv_ce * 100, 2) if not np.isnan(iv_ce) else None,
+            "iv_PE": round(iv_pe * 100, 2) if not np.isnan(iv_pe) else None,
+            "bs_CE": round(bs_call(S, K, T, r, iv_ce), 2) if not np.isnan(iv_ce) else None,
+            "bs_PE": round(bs_put(S, K, T, r, iv_pe), 2) if not np.isnan(iv_pe) else None,
+        }
+        for g, v in greeks_ce.items():
+            entry[f"{g}_CE"] = v if not np.isnan(v) else None
+        for g, v in greeks_pe.items():
+            entry[f"{g}_PE"] = v if not np.isnan(v) else None
+
+        results.append(entry)
+
+    response = {"count": len(results), "data": results}
+    rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
+    return response
+
+
+@app.get("/api/iv-surface")
+def get_iv_surface(expiry: Optional[str] = None):
+    """IV surface: implied volatility across strikes and time.
+    Returns a grid of (datetime, strike, iv_CE, iv_PE) for 3D surface plotting.
+    """
+    cache_key = f"iv_surface:{expiry or 'all'}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    filtered = df.copy()
+    if expiry:
+        filtered = filtered[filtered["expiry"] == expiry]
+
+    # Sample: take every Nth datetime to keep response size manageable
+    datetimes = sorted(filtered["datetime"].unique())
+    step = max(1, len(datetimes) // 50)
+    sampled_dts = datetimes[::step]
+    filtered = filtered[filtered["datetime"].isin(sampled_dts)]
+
+    # Focus on strikes near ATM (+-10 strikes)
+    atm = filtered["ATM"].mode().iloc[0] if len(filtered) > 0 else 25000
+    strikes = sorted(filtered["strike"].unique())
+    atm_idx = min(range(len(strikes)), key=lambda i: abs(strikes[i] - atm))
+    near_strikes = strikes[max(0, atm_idx - 10):atm_idx + 11]
+    filtered = filtered[filtered["strike"].isin(near_strikes)]
+
+    r = RISK_FREE_RATE
+    surface = []
+    for _, row in filtered.iterrows():
+        S = float(row["spot_close"])
+        K = float(row["strike"])
+        T = (row["expiry_close"] - row["datetime"]).total_seconds() / (86400 * 365)
+        if T < 0.5 / 365:
+            continue
+        iv_ce = implied_volatility(float(row["CE"]), S, K, T, r, "CE")
+        iv_pe = implied_volatility(float(row["PE"]), S, K, T, r, "PE")
+        surface.append({
+            "datetime": str(row["datetime"]),
+            "strike": K,
+            "T_days": round(T * 365, 2),
+            "iv_CE": round(iv_ce * 100, 2) if not np.isnan(iv_ce) else None,
+            "iv_PE": round(iv_pe * 100, 2) if not np.isnan(iv_pe) else None,
+        })
+
+    response = {"count": len(surface), "data": surface}
+    rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
+    return response
+
+
+@app.get("/api/option-chain")
+def get_option_chain(
+    expiry: Optional[str] = None,
+    datetime_str: Optional[str] = Query(None, alias="datetime"),
+):
+    """Option chain: consolidated per-strike view with CE/PE prices, OI, volume, IV, Greeks."""
+    cache_key = f"chain:{expiry or 'all'}:{datetime_str or 'latest'}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    filtered = df.copy()
+    if expiry:
+        filtered = filtered[filtered["expiry"] == expiry]
+    if datetime_str:
+        filtered = filtered[filtered["datetime"] == datetime_str]
+    else:
+        filtered = filtered[filtered["datetime"] == filtered["datetime"].max()]
+
+    if len(filtered) == 0:
+        return {"spot": None, "atm": None, "datetime": None, "expiry": None, "chain": []}
+
+    spot = float(filtered["spot_close"].iloc[0])
+    atm = float(filtered["ATM"].iloc[0])
+    dt_str = str(filtered["datetime"].iloc[0])
+    exp_str = str(filtered["expiry"].iloc[0])
+    r = RISK_FREE_RATE
+
+    chain = []
+    for _, row in filtered.sort_values("strike").iterrows():
+        S = float(row["spot_close"])
+        K = float(row["strike"])
+        T = (row["expiry_close"] - row["datetime"]).total_seconds() / (86400 * 365)
+        ce = float(row["CE"])
+        pe = float(row["PE"])
+
+        ce_greeks = {"iv": None, "delta": None, "gamma": None, "theta": None, "vega": None}
+        pe_greeks = {"iv": None, "delta": None, "gamma": None, "theta": None, "vega": None}
+
+        if T >= 0.5 / 365:
+            _iv_ce = implied_volatility(ce, S, K, T, r, "CE")
+            _iv_pe = implied_volatility(pe, S, K, T, r, "PE")
+            if not np.isnan(_iv_ce):
+                ce_greeks["iv"] = round(_iv_ce * 100, 2)
+                g = compute_greeks(S, K, T, r, _iv_ce, "CE")
+                ce_greeks.update({k: g[k] for k in g})
+            if not np.isnan(_iv_pe):
+                pe_greeks["iv"] = round(_iv_pe * 100, 2)
+                g = compute_greeks(S, K, T, r, _iv_pe, "PE")
+                pe_greeks.update({k: g[k] for k in g})
+
+        chain.append({
+            "strike": K,
+            "ce_price": ce,
+            "ce_oi": int(row["oi_CE"]),
+            "ce_volume": int(row["volume_CE"]),
+            "ce_iv": ce_greeks["iv"],
+            "ce_delta": ce_greeks["delta"],
+            "ce_gamma": ce_greeks["gamma"],
+            "ce_theta": ce_greeks["theta"],
+            "ce_vega": ce_greeks["vega"],
+            "pe_price": pe,
+            "pe_oi": int(row["oi_PE"]),
+            "pe_volume": int(row["volume_PE"]),
+            "pe_iv": pe_greeks["iv"],
+            "pe_delta": pe_greeks["delta"],
+            "pe_gamma": pe_greeks["gamma"],
+            "pe_theta": pe_greeks["theta"],
+            "pe_vega": pe_greeks["vega"],
+        })
+
+    response = {
+        "spot": spot,
+        "atm": atm,
+        "datetime": dt_str,
+        "expiry": exp_str,
+        "chain": chain,
     }
+    rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
+    return response
+
+
+@app.get("/api/parity-arbitrage")
+def get_parity_arbitrage(
+    expiry: Optional[str] = None,
+    datetime_str: Optional[str] = Query(None, alias="datetime"),
+    threshold: float = Query(5.0, description="Min mispricing in points to flag as arbitrage"),
+):
+    """Put-Call Parity check and arbitrage opportunity detection.
+
+    Put-Call Parity: C - P = S - K * e^(-rT)
+    Mispricing = (C - P) - (S - K * e^(-rT))
+
+    If mispricing > 0: call is overpriced -> sell call, buy put, buy underlying
+    If mispricing < 0: put is overpriced -> sell put, buy call, short underlying
+    """
+    cache_key = f"parity:{expiry or 'all'}:{datetime_str or 'latest'}:{threshold}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    filtered = df.copy()
+    if expiry:
+        filtered = filtered[filtered["expiry"] == expiry]
+    if datetime_str:
+        filtered = filtered[filtered["datetime"] == datetime_str]
+    else:
+        filtered = filtered[filtered["datetime"] == filtered["datetime"].max()]
+
+    # If latest snapshot is near/at expiry close (T too small), step back
+    MIN_T_SECONDS = 0.5 * 86400  # 0.5 days
+    if len(filtered) > 0:
+        sample_row = filtered.iloc[0]
+        t_check = (sample_row["expiry_close"] - sample_row["datetime"]).total_seconds()
+        if t_check < MIN_T_SECONDS:
+            expiry_close_val = sample_row["expiry_close"]
+            candidate_dts = df[
+                (df["expiry_close"] == expiry_close_val)
+                & ((df["expiry_close"] - df["datetime"]).dt.total_seconds() >= MIN_T_SECONDS)
+            ]["datetime"].unique()
+            if len(candidate_dts) > 0:
+                prev_dt = max(candidate_dts)
+                filtered = df.copy()
+                if expiry:
+                    filtered = filtered[filtered["expiry"] == expiry]
+                filtered = filtered[filtered["datetime"] == prev_dt]
+
+    filtered = filtered.sort_values("strike")
+    r = RISK_FREE_RATE
+
+    results = []
+    opportunities = []
+
+    for _, row in filtered.iterrows():
+        S = float(row["spot_close"])
+        K = float(row["strike"])
+        T = (row["expiry_close"] - row["datetime"]).total_seconds() / (86400 * 365)
+        ce = float(row["CE"])
+        pe = float(row["PE"])
+
+        if T < 0.5 / 365:
+            continue
+
+        pv_strike = K * np.exp(-r * T)
+        theoretical_diff = S - pv_strike  # C - P should equal this
+        actual_diff = ce - pe
+        mispricing = actual_diff - theoretical_diff
+        mispricing_pct = (mispricing / S) * 100 if S > 0 else 0
+
+        entry = {
+            "datetime": str(row["datetime"]),
+            "strike": K,
+            "spot_close": S,
+            "T_days": round(T * 365, 2),
+            "ce_price": ce,
+            "pe_price": pe,
+            "pv_strike": round(pv_strike, 2),
+            "theoretical_diff": round(theoretical_diff, 2),
+            "actual_diff": round(actual_diff, 2),
+            "mispricing": round(mispricing, 2),
+            "mispricing_pct": round(mispricing_pct, 4),
+        }
+
+        if abs(mispricing) >= threshold:
+            if mispricing > 0:
+                entry["signal"] = "call_overpriced"
+                entry["strategy"] = "Sell CE + Buy PE + Buy Spot (conversion)"
+            else:
+                entry["signal"] = "put_overpriced"
+                entry["strategy"] = "Sell PE + Buy CE + Short Spot (reversal)"
+            entry["potential_profit"] = round(abs(mispricing), 2)
+            opportunities.append(entry)
+
+        results.append(entry)
+
+    opportunities.sort(key=lambda x: abs(x["mispricing"]), reverse=True)
+
+    response = {
+        "total_strikes": len(results),
+        "arbitrage_count": len(opportunities),
+        "threshold": threshold,
+        "opportunities": opportunities[:20],
+        "all": results,
+    }
+    rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
+    return response

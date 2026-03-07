@@ -2,31 +2,41 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LayoutDashboard, CandlestickChart, TableProperties, MessageSquare } from "lucide-react";
 
 const links = [
-  { href: "/", label: "Dashboard" },
-  { href: "/candles", label: "Candles" },
-  { href: "/chat", label: "Chat" },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/chain", label: "Chain", icon: TableProperties },
+  { href: "/chat", label: "Chat", icon: MessageSquare },
 ];
 
 export function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="border-b border-[var(--border)] px-4 flex items-center gap-6 h-8 text-xs shrink-0 bg-[var(--bg)] w-full">
-      <span className="font-mono font-medium tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--fg)] to-[var(--muted)]">CodeForge</span>
-      <div className="flex gap-4 items-center">
-        {links.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className={`transition-colors py-1 ${
-              pathname === l.href ? "text-[var(--fg)] border-b border-[var(--fg)]" : "text-[var(--muted)] hover:text-[var(--fg)]"
-            }`}
-          >
-            {l.label}
-          </Link>
-        ))}
+    <nav className="border-b border-[var(--border)] px-4 flex items-center gap-1 h-10 text-xs shrink-0 bg-[var(--bg)] w-full">
+      <span className="font-mono font-semibold tracking-tight text-sm mr-4 bg-clip-text text-transparent bg-gradient-to-r from-[var(--fg)] to-[var(--muted)]">
+        CodeForge
+      </span>
+      <div className="flex items-center gap-0.5">
+        {links.map((l) => {
+          const Icon = l.icon;
+          const active = pathname === l.href;
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ${
+                active
+                  ? "bg-[var(--border)] text-[var(--fg)]"
+                  : "text-[var(--muted)] hover:text-[var(--fg)] hover:bg-[var(--card-hover)]"
+              }`}
+            >
+              <Icon size={14} strokeWidth={active ? 2 : 1.5} />
+              <span>{l.label}</span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

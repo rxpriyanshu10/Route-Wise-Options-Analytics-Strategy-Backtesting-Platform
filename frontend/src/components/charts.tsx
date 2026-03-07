@@ -2,7 +2,7 @@
 
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, Legend, AreaChart, Area,
+  ResponsiveContainer, CartesianGrid, AreaChart, Area,
   ComposedChart,
 } from "recharts";
 
@@ -11,13 +11,19 @@ const COLORS = {
   pe: "#ef4444",
   spot: "#22c55e",
   straddle: "#f59e0b",
-  neutral: "#888",
+  neutral: "#71717a",
 };
 
-const axisStyle = { fontSize: 11, fill: "#888" };
+const axisStyle = { fontSize: 9, fill: "#71717a" };
 const tooltipStyle = {
-  contentStyle: { background: "#1a1a1a", border: "1px solid #333", borderRadius: 8, fontSize: 12 },
-  labelStyle: { color: "#aaa" },
+  contentStyle: {
+    background: "#0c0c0e",
+    border: "1px solid #27272a",
+    borderRadius: 8,
+    fontSize: 11,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+  },
+  labelStyle: { color: "#a1a1aa" },
 };
 
 export function OIByStrikeChart({ data, height = 300 }: { data: { strikes: number[]; oi_CE: number[]; oi_PE: number[] }, height?: number | string }) {
@@ -27,16 +33,21 @@ export function OIByStrikeChart({ data, height = 300 }: { data: { strikes: numbe
     "Put OI": data.oi_PE[i],
   }));
 
+  const formatYAxis = (tickItem: number) => {
+    if (Math.abs(tickItem) >= 1000000) return (tickItem / 1000000).toFixed(1) + 'M';
+    if (Math.abs(tickItem) >= 1000) return (tickItem / 1000).toFixed(1) + 'k';
+    return tickItem.toString();
+  };
+
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-        <XAxis dataKey="strike" tick={axisStyle} />
-        <YAxis tick={axisStyle} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+        <XAxis dataKey="strike" tick={axisStyle} tickLine={false} />
+        <YAxis tick={axisStyle} tickLine={false} tickFormatter={formatYAxis} />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Bar isAnimationActive={false} dataKey="Call OI" fill={COLORS.ce} opacity={0.8} />
-        <Bar isAnimationActive={false} dataKey="Put OI" fill={COLORS.pe} opacity={0.8} />
+        <Bar isAnimationActive={false} dataKey="Call OI" fill={COLORS.ce} opacity={0.85} radius={[2, 2, 0, 0]} />
+        <Bar isAnimationActive={false} dataKey="Put OI" fill={COLORS.pe} opacity={0.85} radius={[2, 2, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -49,16 +60,21 @@ export function VolumeByStrikeChart({ data, height = 300 }: { data: { strikes: n
     "Put Vol": data.volume_PE[i],
   }));
 
+  const formatYAxis = (tickItem: number) => {
+    if (Math.abs(tickItem) >= 1000000) return (tickItem / 1000000).toFixed(1) + 'M';
+    if (Math.abs(tickItem) >= 1000) return (tickItem / 1000).toFixed(1) + 'k';
+    return tickItem.toString();
+  };
+
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-        <XAxis dataKey="strike" tick={axisStyle} />
-        <YAxis tick={axisStyle} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+        <XAxis dataKey="strike" tick={axisStyle} tickLine={false} />
+        <YAxis tick={axisStyle} tickLine={false} tickFormatter={formatYAxis} />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Bar isAnimationActive={false} dataKey="Call Vol" fill={COLORS.ce} opacity={0.8} />
-        <Bar isAnimationActive={false} dataKey="Put Vol" fill={COLORS.pe} opacity={0.8} />
+        <Bar isAnimationActive={false} dataKey="Call Vol" fill={COLORS.ce} opacity={0.85} radius={[2, 2, 0, 0]} />
+        <Bar isAnimationActive={false} dataKey="Put Vol" fill={COLORS.pe} opacity={0.85} radius={[2, 2, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -74,13 +90,12 @@ export function PCRChart({ data, height = 300 }: { data: { datetime: string[]; p
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-        <XAxis dataKey="time" tick={axisStyle} interval="preserveStartEnd" />
-        <YAxis tick={axisStyle} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+        <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+        <YAxis tick={axisStyle} tickLine={false} />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Line isAnimationActive={false} type="monotone" dataKey="PCR (OI)" stroke={COLORS.ce} dot={false} strokeWidth={2} />
-        <Line isAnimationActive={false} type="monotone" dataKey="PCR (Volume)" stroke={COLORS.pe} dot={false} strokeWidth={2} />
+        <Line isAnimationActive={false} type="monotone" dataKey="PCR (OI)" stroke={COLORS.ce} dot={false} strokeWidth={1.5} />
+        <Line isAnimationActive={false} type="monotone" dataKey="PCR (Volume)" stroke={COLORS.pe} dot={false} strokeWidth={1.5} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -96,12 +111,11 @@ export function SpotChart({ data, height = 300 }: { data: { datetime: string[]; 
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-        <XAxis dataKey="time" tick={axisStyle} interval="preserveStartEnd" />
-        <YAxis domain={["auto", "auto"]} tick={axisStyle} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+        <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+        <YAxis domain={["auto", "auto"]} tick={axisStyle} tickLine={false} />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Line isAnimationActive={false} type="monotone" dataKey="Spot" stroke={COLORS.spot} dot={false} strokeWidth={2} />
+        <Line isAnimationActive={false} type="monotone" dataKey="Spot" stroke={COLORS.spot} dot={false} strokeWidth={1.5} />
         <Line isAnimationActive={false} type="monotone" dataKey="ATM" stroke={COLORS.neutral} dot={false} strokeWidth={1} strokeDasharray="5 5" />
       </LineChart>
     </ResponsiveContainer>
@@ -118,14 +132,13 @@ export function StraddleChart({ data, height = 300 }: { data: { datetime: string
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ComposedChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-        <XAxis dataKey="time" tick={axisStyle} interval="preserveStartEnd" />
-        <YAxis yAxisId="left" tick={axisStyle} />
-        <YAxis yAxisId="right" orientation="right" tick={axisStyle} domain={["auto", "auto"]} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+        <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+        <YAxis yAxisId="left" tick={axisStyle} tickLine={false} />
+        <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickLine={false} domain={["auto", "auto"]} />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Area isAnimationActive={false} yAxisId="left" type="monotone" dataKey="Straddle" fill={COLORS.straddle} stroke={COLORS.straddle} fillOpacity={0.2} />
-        <Line isAnimationActive={false} yAxisId="right" type="monotone" dataKey="Spot" stroke={COLORS.spot} dot={false} strokeWidth={2} />
+        <Area isAnimationActive={false} yAxisId="left" type="monotone" dataKey="Straddle" fill={COLORS.straddle} stroke={COLORS.straddle} fillOpacity={0.15} />
+        <Line isAnimationActive={false} yAxisId="right" type="monotone" dataKey="Spot" stroke={COLORS.spot} dot={false} strokeWidth={1.5} />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -138,17 +151,22 @@ export function OIChangeChart({ data, height = 300 }: { data: { datetime: string
     "PE OI Change": data.oi_PE_change[i],
   }));
 
+  const formatYAxis = (tickItem: number) => {
+    if (Math.abs(tickItem) >= 1000000) return (tickItem / 1000000).toFixed(1) + 'M';
+    if (Math.abs(tickItem) >= 1000) return (tickItem / 1000).toFixed(1) + 'k';
+    return tickItem.toString();
+  };
+
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-        <XAxis dataKey="time" tick={axisStyle} interval="preserveStartEnd" />
-        <YAxis tick={axisStyle} />
+      <AreaChart data={chartData}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+        <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+        <YAxis tick={axisStyle} tickLine={false} tickFormatter={formatYAxis} />
         <Tooltip {...tooltipStyle} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Bar isAnimationActive={false} dataKey="CE OI Change" fill={COLORS.ce} opacity={0.7} />
-        <Bar isAnimationActive={false} dataKey="PE OI Change" fill={COLORS.pe} opacity={0.7} />
-      </BarChart>
+        <Area isAnimationActive={false} type="monotone" dataKey="CE OI Change" stroke={COLORS.ce} fill={COLORS.ce} fillOpacity={0.2} strokeWidth={1.5} dot={false} />
+        <Area isAnimationActive={false} type="monotone" dataKey="PE OI Change" stroke={COLORS.pe} fill={COLORS.pe} fillOpacity={0.2} strokeWidth={1.5} dot={false} />
+      </AreaChart>
     </ResponsiveContainer>
   );
 }
@@ -176,18 +194,17 @@ export function DynamicChart({
       {title && <p className="text-sm font-medium text-[var(--muted)] mb-2">{title}</p>}
       <ResponsiveContainer width="100%" height={300}>
         <ChartComponent data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-          <XAxis dataKey={xKey} tick={axisStyle} interval="preserveStartEnd" />
-          <YAxis tick={axisStyle} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+          <XAxis dataKey={xKey} tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+          <YAxis tick={axisStyle} tickLine={false} />
           <Tooltip {...tooltipStyle} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
           {yKeys.map((key, i) =>
             type === "line" ? (
-              <Line isAnimationActive={false} key={key} type="monotone" dataKey={key} stroke={colors[i % colors.length]} dot={false} strokeWidth={2} />
+              <Line isAnimationActive={false} key={key} type="monotone" dataKey={key} stroke={colors[i % colors.length]} dot={false} strokeWidth={1.5} />
             ) : type === "area" ? (
-              <Area isAnimationActive={false} key={key} type="monotone" dataKey={key} stroke={colors[i % colors.length]} fill={colors[i % colors.length]} fillOpacity={0.2} />
+              <Area isAnimationActive={false} key={key} type="monotone" dataKey={key} stroke={colors[i % colors.length]} fill={colors[i % colors.length]} fillOpacity={0.15} />
             ) : (
-              <Bar isAnimationActive={false} key={key} dataKey={key} fill={colors[i % colors.length]} opacity={0.8} />
+              <Bar isAnimationActive={false} key={key} dataKey={key} fill={colors[i % colors.length]} opacity={0.85} radius={[2, 2, 0, 0]} />
             )
           )}
         </ChartComponent>
