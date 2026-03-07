@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CodeForge Options Analytics",
+  title: "OpenQuant Options Analytics",
   description: "AI-powered options market analytics",
 };
 

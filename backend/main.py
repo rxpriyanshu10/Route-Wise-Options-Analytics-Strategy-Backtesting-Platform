@@ -13,7 +13,7 @@ load_dotenv()
 from ml_models import AnomalyDetector
 from greeks import implied_volatility, compute_greeks, bs_call, bs_put, RISK_FREE_RATE
 
-app = FastAPI(title="CodeForge Options Analytics API")
+app = FastAPI(title="OpenQuant Options Analytics API")
 
 app.add_middleware(
     CORSMiddleware,
