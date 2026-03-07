@@ -47,7 +47,7 @@ export function OptionChainTable({ data }: { data: OptionChainData }) {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-4 text-[10px] font-mono text-(--muted)">
+        <div className="flex items-center gap-4 text-[11px] font-mono text-(--muted)">
           <span>
             SPOT <span className="text-(--fg)">{data.spot?.toFixed(2)}</span>
           </span>
@@ -58,14 +58,14 @@ export function OptionChainTable({ data }: { data: OptionChainData }) {
         </div>
         <button
           onClick={() => setShowGreeks(!showGreeks)}
-          className="text-[10px] font-mono px-2 py-0.5 border border-(--border) rounded text-(--muted) hover:text-(--fg) hover:border-(--muted) transition-colors"
+          className="text-[11px] font-mono px-2 py-0.5 border border-(--border) rounded text-(--muted) hover:text-(--fg) hover:border-(--muted) transition-colors"
         >
           {showGreeks ? "Hide Greeks" : "Show Greeks"}
         </button>
       </div>
 
       <div className="overflow-x-auto border border-(--border) rounded">
-        <table className="w-full text-[10px] font-mono border-collapse">
+        <table className="w-full text-[11px] font-mono border-collapse">
           <thead>
             <tr className="text-(--muted) uppercase tracking-widest">
               <th colSpan={showGreeks ? 6 : 4} className="text-center py-1.5 px-2 border-b border-r border-(--border) bg-[#0d1f0d]/30 text-green-500/70">

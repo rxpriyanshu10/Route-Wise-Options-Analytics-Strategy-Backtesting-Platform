@@ -189,7 +189,7 @@ export default function ChainPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowIV(!showIV)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer ${
                 showIV ? "bg-(--border) text-(--fg)" : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
               }`}
             >
@@ -198,7 +198,7 @@ export default function ChainPage() {
             </button>
             <button
               onClick={() => setShowVolSurface(!showVolSurface)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono uppercase tracking-wider transition-colors cursor-pointer ${
                 showVolSurface ? "bg-(--border) text-(--fg)" : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
               }`}
             >
@@ -235,7 +235,7 @@ export default function ChainPage() {
         </div>
 
         {/* Resizable content area */}
-        <PanelGroup direction="vertical" className="flex-1 min-h-0">
+        <PanelGroup orientation="vertical" className="flex-1 min-h-0">
           {hasTopPanels && (
             <>
               <Panel defaultSize={35} minSize={15} collapsible>
@@ -243,8 +243,8 @@ export default function ChainPage() {
                   {showIV && data && ivChartData.length > 0 && (
                     <div className="px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-[10px] font-mono uppercase tracking-widest text-(--muted)">Implied Volatility by Strike</h3>
-                        <div className="flex items-center gap-4 text-[10px] font-mono">
+                        <h3 className="text-[11px] font-mono uppercase tracking-widest text-(--muted)">Implied Volatility by Strike</h3>
+                        <div className="flex items-center gap-4 text-[11px] font-mono">
                           <span className="flex items-center gap-1.5">
                             <span className="inline-block w-3 h-0.5 rounded bg-[#22c55e]" /> CE IV
                           </span>
@@ -275,13 +275,13 @@ export default function ChainPage() {
                   {showVolSurface && data && volSurfaceData?.data?.length > 0 && (
                     <div className="px-4 py-3 border-t border-(--border)">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-[10px] font-mono uppercase tracking-widest text-(--muted)">Volatility Surface</h3>
+                        <h3 className="text-[11px] font-mono uppercase tracking-widest text-(--muted)">Volatility Surface</h3>
                         <div className="flex items-center gap-1">
                           {(["CE", "PE"] as const).map((m) => (
                             <button
                               key={m}
                               onClick={() => setVolSurfaceMode(m)}
-                              className={`px-2.5 py-0.5 rounded text-[10px] font-mono cursor-pointer transition-colors ${
+                              className={`px-2.5 py-0.5 rounded text-[11px] font-mono cursor-pointer transition-colors ${
                                 volSurfaceMode === m ? "bg-(--border) text-(--fg)" : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
                               }`}
                             >{m}</button>
@@ -314,9 +314,9 @@ export default function ChainPage() {
                 <table className="w-full border-collapse text-[11px] font-mono">
                   <thead className="sticky top-0 z-10">
                     <tr className="bg-(--bg)">
-                      <th colSpan={CE_COLS.length} className="text-center py-1.5 text-[10px] uppercase tracking-widest font-medium text-(--blue) border-b border-(--border)">Calls</th>
+                      <th colSpan={CE_COLS.length} className="text-center py-1.5 text-[11px] uppercase tracking-widest font-medium text-(--blue) border-b border-(--border)">Calls</th>
                       <th className="border-b border-(--border) bg-(--bg)" />
-                      <th colSpan={PE_COLS.length} className="text-center py-1.5 text-[10px] uppercase tracking-widest font-medium text-(--red) border-b border-(--border)">Puts</th>
+                      <th colSpan={PE_COLS.length} className="text-center py-1.5 text-[11px] uppercase tracking-widest font-medium text-(--red) border-b border-(--border)">Puts</th>
                     </tr>
                     <tr className="bg-(--card) border-b border-(--border)">
                       {CE_COLS.map((col) => (

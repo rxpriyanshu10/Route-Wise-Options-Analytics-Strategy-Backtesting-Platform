@@ -103,7 +103,7 @@ export default function ChatPage() {
                             className="bg-(--card) border border-(--border) rounded-lg flex flex-col p-3 max-w-2xl w-full"
                           >
                             {args.title && (
-                              <h3 className="text-[10px] font-mono uppercase tracking-widest text-(--muted) mb-1.5 shrink-0 px-0.5">
+                              <h3 className="text-[11px] font-mono uppercase tracking-widest text-(--muted) mb-1.5 shrink-0 px-0.5">
                                 {args.title}
                               </h3>
                             )}
@@ -123,7 +123,7 @@ export default function ChatPage() {
                         return (
                           <div
                             key={i}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-(--card) border border-(--border) text-[10px] font-mono text-(--muted)"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-(--card) border border-(--border) text-[11px] font-mono text-(--muted)"
                           >
                             <Loader2 size={10} className="animate-spin" />
                             {toolName}
@@ -135,7 +135,7 @@ export default function ChatPage() {
                         return (
                           <div
                             key={i}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-(--card) border border-(--border) text-[10px] font-mono text-(--muted) opacity-60"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-(--card) border border-(--border) text-[11px] font-mono text-(--muted) opacity-60"
                           >
                             <Check size={10} className="text-(--green)" />
                             {toolName}

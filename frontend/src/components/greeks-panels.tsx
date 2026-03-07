@@ -42,7 +42,7 @@ export function GreeksSummary({ data }: { data: any }) {
   ];
 
   return (
-    <div className="space-y-1.5 text-[10px]">
+    <div className="space-y-1.5 text-[11px]">
       <div className="flex items-center justify-between text-(--muted) font-mono">
         <span>ATM {atm.strike}</span>
         <span>{atm.T_days?.toFixed(1)}d to exp</span>
@@ -92,13 +92,13 @@ export function IVSmileChart({ data, height = "100%" }: { data: any; height?: st
 
 export function ParityList({ data }: { data: any }) {
   if (!data?.opportunities?.length) {
-    return <div className="text-(--muted) text-center py-4 text-[10px]">No arbitrage ({data?.threshold ?? 5}pt threshold)</div>;
+    return <div className="text-(--muted) text-center py-4 text-[11px]">No arbitrage ({data?.threshold ?? 5}pt threshold)</div>;
   }
 
   const opps = data.opportunities.slice(0, 8);
 
   return (
-    <div className="space-y-1 text-[10px] font-mono overflow-y-auto hidden-scrollbar">
+    <div className="space-y-1 text-[11px] font-mono overflow-y-auto hidden-scrollbar">
       <div className="flex items-center justify-between text-(--muted)">
         <span>{data.arbitrage_count} opportunities</span>
         <span>threshold: {data.threshold}pts</span>

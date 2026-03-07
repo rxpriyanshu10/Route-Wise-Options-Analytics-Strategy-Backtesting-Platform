@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.118",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
     "@openrouter/ai-sdk-provider": "^2.2.5",
     "ai": "^6.0.121",
     "lucide-react": "^0.469.0",

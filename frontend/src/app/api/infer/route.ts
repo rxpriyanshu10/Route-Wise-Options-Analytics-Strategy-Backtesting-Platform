@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   const tasks = panels.map(async (panel) => {
     try {
       const { text } = await generateText({
-        model: openrouter.chat("arcee-ai/trinity-large-preview:free") as any,
+        model: openrouter.chat("google/gemini-2.5-flash-lite") as any,
         system: SYSTEM,
         prompt: `Dashboard panel: "${panel.title}"\n\nData:\n${panel.summary}`,
         maxTokens: 120,

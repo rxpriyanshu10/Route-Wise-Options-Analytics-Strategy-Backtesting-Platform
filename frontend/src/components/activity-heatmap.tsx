@@ -92,7 +92,7 @@ export function ActivityHeatmap({ data, atm, label = "Value", unit = "" }: Props
     return { grid: gridData, strikes: sortedStrikes, times: sortedTimes, minVal: min, maxVal: max };
   }, [data]);
 
-  if (grid.length === 0) return <div className="text-(--muted) text-center py-8 text-[10px]">No heatmap data</div>;
+  if (grid.length === 0) return <div className="text-(--muted) text-center py-8 text-[11px]">No heatmap data</div>;
 
   const margin = { top: 10, right: 70, bottom: 36, left: 50 };
   const { width, height } = dims;
@@ -205,7 +205,7 @@ export function ActivityHeatmap({ data, atm, label = "Value", unit = "" }: Props
 
       {tooltip && (
         <div
-          className="absolute pointer-events-none z-10 text-[10px] font-mono rounded border px-2 py-1.5"
+          className="absolute pointer-events-none z-10 text-[11px] font-mono rounded border px-2 py-1.5"
           style={{
             left: Math.min(tooltip.x + 12, width - 140),
             top: Math.max(tooltip.y - 60, 0),

@@ -9,12 +9,14 @@ export function ChartCard({
   className,
   insight,
   insightLoading,
+  headerRight,
 }: {
   title?: string;
   children: ReactNode;
   className?: string;
   insight?: string;
   insightLoading?: boolean;
+  headerRight?: ReactNode;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -37,16 +39,19 @@ export function ChartCard({
     >
       {title ? (
         <div className="flex items-center justify-between shrink-0 mb-1.5 px-0.5">
-          <h3 className={`font-mono uppercase tracking-widest text-(--muted) ${expanded ? "text-xs" : "text-[10px]"}`}>
+          <h3 className={`font-mono uppercase tracking-widest text-(--muted) ${expanded ? "text-xs" : "text-[11px]"}`}>
             {title}
           </h3>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="text-(--muted) hover:text-(--fg) transition-colors cursor-pointer p-0.5 rounded hover:bg-(--card-hover)"
-            title={expanded ? "Exit fullscreen" : "Expand"}
-          >
-            {expanded ? <X size={14} /> : <Maximize2 size={12} />}
-          </button>
+          <div className="flex items-center gap-2">
+            {headerRight}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-(--muted) hover:text-(--fg) transition-colors cursor-pointer p-0.5 rounded hover:bg-(--card-hover)"
+              title={expanded ? "Exit fullscreen" : "Expand"}
+            >
+              {expanded ? <X size={14} /> : <Maximize2 size={12} />}
+            </button>
+          </div>
         </div>
       ) : (
         <button
