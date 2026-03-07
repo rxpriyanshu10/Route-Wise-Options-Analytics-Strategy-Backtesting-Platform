@@ -1,187 +1,261 @@
-# CodeForge – AI-Powered Options Market Analytics Challenge
+# OpenQuant
 
-## Overview
+> **1st Place Winner — FOSS Club MPSTME CodeForge 2026**
 
-Welcome to the **CodeForge FinTech Challenge**.
+OpenQuant is a full-stack options analytics platform for exploring NIFTY derivatives data with interactive visualizations, Greeks, volatility analysis, anomaly detection, strategy design, backtesting, and AI-assisted insights.
 
-In this challenge, participants will build an **AI-powered analytics and visualization platform** that helps analyze derivatives options data and uncover meaningful patterns in market activity.
+It combines a **FastAPI + Python analytics backend** with a **Next.js 15 + React 19 frontend**, using **Redis** for caching and **OpenRouter** for LLM-powered summaries and strategy recommendations.
 
-Options markets produce large volumes of high-frequency data across multiple dimensions such as **time, strike prices, expiries, trading volume, and open interest**. Extracting actionable insights from this complex data is challenging.
+## Screenshots
 
-Your goal is to design a system that transforms raw options data into **clear visual insights and intelligent analytics**, helping users understand market behavior and identify potential opportunities.
+### Dashboard
 
----
+<p align="center">
+	<img src="assets/dashboard1.png" alt="OpenQuant dashboard screenshot 1" width="48%" />
+	<img src="assets/dashboard2.png" alt="OpenQuant dashboard screenshot 2" width="48%" />
+</p>
 
-## Challenge Goals
+### Strategies
 
-Participants are expected to build a platform that can:
+<p align="center">
+	<img src="assets/strategy1.png" alt="OpenQuant strategy screenshot 1" width="48%" />
+	<img src="assets/strategy2.png" alt="OpenQuant strategy screenshot 2" width="48%" />
+</p>
 
-- Process and structure large-scale options datasets
-- Visualize options market activity across strikes, expiries, and time
-- Identify patterns in **open interest, trading volume, and volatility**
-- Detect anomalies or unusual activity in the derivatives market
-- Use **AI or machine learning techniques** to analyze market behavior
+## Highlights
 
-The final solution should help users explore options market data and generate meaningful insights through **interactive dashboards and analytical tools**.
+- **Interactive analytics dashboard** for open interest, volume, PCR, spot, straddle price, OI change, candlestick patterns, and strike activity heatmaps.
+- **Options Greeks engine** with implied volatility, Delta, Gamma, Theta, Vega, parity checks, mispricing detection, and IV surface views.
+- **Option chain terminal** with CE/PE side-by-side metrics around ATM strikes.
+- **ML-powered anomaly detection** using normalized snapshot features and `IsolationForest`.
+- **Strategy lab** with prebuilt strategies, custom leg builder, payoff visualization, historical backtesting, and optimization.
+- **AI features** for concise dashboard inferences and prompt-based strategy recommendations.
+- **Portable deployment** through Docker Compose.
 
----
+## App Sections
+
+### 1. Dashboard
+
+The main dashboard includes:
+
+- Open interest by strike
+- Volume by strike
+- Put-call ratio time series
+- Spot price and ATM tracking
+- Straddle price evolution
+- OI change over time
+- Candlestick patterns
+- Activity heatmap
+- ML anomaly timeline and anomaly list
+- AI-generated panel inferences
+
+### 2. Option Chain
+
+The chain view provides:
+
+- Live chain snapshot for a selected expiry
+- CE/PE OI, volume, LTP, IV, Delta, Gamma, Theta, Vega
+- ATM-centered filtering
+- IV smile chart
+- Volatility surface visualization
+
+### 3. Strategies
+
+The strategies workspace supports:
+
+- Prebuilt options strategies
+- Strategy explanation and payoff breakdown
+- Custom multi-leg strategy builder
+- Historical backtesting
+- Strategy optimization by entry time and hold duration
+- Prompt-to-strategy recommendations via AI
+
+### 4. Chat
+
+The chat interface lets users ask natural-language questions about options data and receive concise answers with chart-capable tool responses.
+
+## Architecture
+
+### Frontend
+
+- **Next.js 15** with App Router
+- **React 19**
+- **Tailwind CSS v4**
+- **Recharts** for data visualization
+- **react-resizable-panels** for terminal-style layouts
+- **Vercel AI SDK + OpenRouter** for AI workflows
+
+### Backend
+
+- **FastAPI** API server
+- **Pandas / NumPy / SciPy** for analytics and derivatives calculations
+- **Scikit-learn** for anomaly detection and ML signals
+- **SQLite** as the local analytical store
+- **Redis** for caching ML-heavy responses
+
+## Backend API Coverage
+
+The backend exposes endpoints for:
+
+- Dataset overview and metadata
+- OI / volume aggregation by strike
+- PCR, spot, max pain, straddle, and OI change time series
+- Candle generation and pattern extraction
+- Anomaly detection
+- Greeks and implied volatility
+- Option chain and IV surface
+- Put-call parity arbitrage checks
+- Activity heatmaps
+- Strategy generation, payoff, backtesting, and optimization
+
+## Data Pipeline
+
+CSV files in `backend/data/` are migrated into `backend/data/options.db` through `backend/migrate_to_sqlite.py`.
+
+During container builds, the backend automatically creates the SQLite database if CSV files are present and the database does not already exist.
+
+Expected data fields include values such as:
+
+- `datetime`
+- `expiry`
+- `strike`
+- `spot_close`
+- `oi_CE` / `oi_PE`
+- `volume_CE` / `volume_PE`
+- `CE` / `PE`
+- `ATM`
 
 ## Repository Structure
-codeforge-options-analytics/
 
-data/ # Dataset and metadata
-notebooks/ # Exploratory analysis notebook
-src/ # Core source code modules
-scripts/ # Scripts to run applications
-README.md # Project overview
-PROBLEM_STATEMENT.md
-requirements.txt
-
-
----
-
-## Dataset
-
-The dataset provided in the `data/` folder contains historical options market information.
-
-Example columns include:
-
-| Column | Description |
-|------|-------------|
-| datetime | Timestamp of the observation |
-| expiry | Option expiry date |
-| strike | Strike price |
-| spot_close | Underlying asset price |
-| oi_CE | Call option open interest |
-| oi_PE | Put option open interest |
-| volume_CE | Call option trading volume |
-| volume_PE | Put option trading volume |
-| ATM | At-the-money strike |
-
-Participants are encouraged to perform additional feature engineering to extract useful signals from the dataset.
-
----
+```text
+CodeForge/
+├── assets/                    # README screenshots
+├── backend/
+│   ├── main.py                # FastAPI app and API endpoints
+│   ├── greeks.py              # Black-Scholes, IV, Greeks
+│   ├── ml_models.py           # Anomaly detection / ML helpers
+│   ├── strategies.py          # Strategy generation and payoffs
+│   ├── backtester.py          # Historical backtesting and optimization
+│   ├── migrate_to_sqlite.py   # CSV -> SQLite migration
+│   ├── requirements.txt       # Python dependencies
+│   ├── Dockerfile             # Backend image
+│   └── data/                  # CSV inputs and SQLite DB
+├── frontend/
+│   ├── src/app/               # Dashboard, chain, strategies, chat pages
+│   ├── src/components/        # Charts, panels, navigation, heatmaps
+│   ├── src/hooks/             # Frontend hooks
+│   ├── src/lib/               # API helpers
+│   ├── package.json           # Frontend dependencies
+│   └── Dockerfile             # Frontend image
+├── docker-compose.yml         # Full-stack local deployment
+└── README.md
+```
 
 ## Getting Started
 
-### 1. Clone the Repository
+### Prerequisites
 
-git clone <repository-url>
-cd codeforge-options-analytics
+- Docker and Docker Compose, **or**
+- Python 3.12+, Node.js 20+, `pnpm`, and Redis
 
+## Option A — Run with Docker Compose
 
-### 2. Install Dependencies
+From the project root:
 
+```bash
+docker compose up --build
+```
 
+Services:
+
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:8000`
+- API docs: `http://localhost:8000/docs`
+- Redis: `localhost:6379`
+
+## Option B — Run Locally
+
+### 1. Backend
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+python migrate_to_sqlite.py
+uvicorn main:app --reload --port 8000
+```
 
+If you prefer `fastapi dev`, that works as well once dependencies are installed.
 
-### 3. Run the Example Dashboard
+### 2. Redis
 
+Start a local Redis instance on port `6379`.
 
-python scripts/run_dashboard.py
+### 3. Frontend
 
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
 
-This will launch a simple starter dashboard built using **Streamlit**.
+Frontend runs on `http://localhost:3000`.
 
-Participants are expected to expand this dashboard with additional visualizations and analytics.
+## Environment Variables
 
----
+### Frontend
 
-## What Participants Should Build
+Create `frontend/.env.local` as needed:
 
-Teams should extend the repository to develop:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+OPENROUTER_API_KEY=your_key_here
+```
 
-- Interactive **data visualizations**
-- Strike-wise analysis of **open interest and volume**
-- **Volatility analysis tools**
-- **AI or machine learning models** to detect patterns
-- **Anomaly detection systems** for unusual options activity
-- Intuitive **analytics dashboards**
+### Backend
 
-The goal is to transform raw derivatives data into **actionable insights for traders and analysts**.
+The backend reads environment variables such as:
 
----
+```env
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
 
-## Use of Free and Open Source Software (FOSS)
+## Core Dependencies
 
-A core objective of this event is to promote the use of **Free and Open Source Software (FOSS)**.
+### Backend
 
-Participants will be **significantly evaluated based on how effectively they use FOSS tools and frameworks in their solution**.
+- `fastapi`
+- `uvicorn`
+- `pandas`
+- `numpy`
+- `scipy`
+- `scikit-learn`
+- `redis`
+- `python-dotenv`
 
-Examples of recommended open-source technologies include:
+### Frontend
 
-### Data Analysis
-- Python
-- Pandas
-- NumPy
+- `next`
+- `react`
+- `recharts`
+- `@ai-sdk/react`
+- `@openrouter/ai-sdk-provider`
+- `lucide-react`
+- `react-resizable-panels`
 
-### Machine Learning
-- Scikit-learn
-- PyTorch
-- TensorFlow
+## Why This Project Won
 
-### Visualization
-- Plotly
-- Matplotlib
-- D3.js
+OpenQuant was built to turn dense options data into a usable decision-support system:
 
-### Dashboard Development
-- Streamlit
-- Dash
-- React
+- clear and information-dense UI
+- real quantitative analytics
+- ML anomaly detection
+- practical options strategy workflows
+- AI-assisted interpretation
+- fully open-source stack end to end
 
-### Data Infrastructure
-- PostgreSQL
-- DuckDB
-- Apache Spark
+## License
 
-Teams that creatively leverage open-source ecosystems or build reusable open tools will receive additional consideration during evaluation.
-
----
-
-## Evaluation Criteria
-
-Submissions will be evaluated based on the following factors:
-
-### Visualization Quality
-Clarity and effectiveness of visualizations in representing complex options data.
-
-### Analytical Depth
-Ability to uncover meaningful patterns in volatility, trading activity, or market structure.
-
-### AI / Machine Learning Integration
-Use of intelligent models for pattern detection, forecasting, or anomaly detection.
-
-### Scalability
-Ability to handle large datasets efficiently.
-
-### User Experience
-Ease of use, interactivity, and usability of the platform.
-
-### Use of FOSS Tools
-Effective and innovative use of open-source technologies.
-
-### Innovation
-Originality in analytics techniques, visualization design, or platform features.
-
----
-
-## Submission Guidelines
-
-Each team submission should include:
-
-- Source code
-- Documentation explaining the approach
-- Instructions for running the solution
-- Any trained models or additional data processing scripts
-
----
-
-## Final Note
-
-The purpose of this challenge is not only to build visual dashboards but to **extract meaningful insights from complex options market data using analytics and AI**.
-
-Participants are encouraged to experiment, explore new ideas, and build innovative solutions that improve understanding of derivatives markets.
-
-Good luck and happy building.
+This repository is currently provided without an explicit license. Add one if you plan to distribute or open-source it publicly.
