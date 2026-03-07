@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #000;
+  --fg: #fafafa;
+  --muted: #666;
+  --border: #1a1a1a;
+  --card: #050505;
+  --accent: #fafafa;
+  --green: #10b981;
+  --red: #ef4444;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* Recharts tooltip fix */
+.recharts-tooltip-wrapper {
+  z-index: 100 !important;
+}
