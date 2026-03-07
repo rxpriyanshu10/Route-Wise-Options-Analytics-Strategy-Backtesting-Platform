@@ -3,7 +3,7 @@
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, AreaChart, Area,
-  ComposedChart,
+  ComposedChart, ReferenceLine,
 } from "recharts";
 
 const COLORS = {
@@ -80,76 +80,130 @@ export function VolumeByStrikeChart({ data, height = 300 }: { data: { strikes: n
   );
 }
 
-export function PCRChart({ data, height = 300 }: { data: { datetime: string[]; pcr_oi: number[]; pcr_volume: number[] }, height?: number | string }) {
+export function PCRChart({ data, height = 300, activeTime, onHover }: { data: { datetime: string[]; pcr_oi: number[]; pcr_volume: number[] }, height?: number | string, activeTime?: string | null, onHover?: (datetime: string | null) => void }) {
   const chartData = data.datetime.map((d, i) => ({
     time: d.slice(5),
+    fullDatetime: d,
     "PCR (OI)": data.pcr_oi[i],
     "PCR (Volume)": data.pcr_volume[i],
   }));
 
+  const activeTimeFormatted = activeTime ? activeTime.slice(5) : null;
+
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-        <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
-        <YAxis tick={axisStyle} tickLine={false} />
-        <Tooltip {...tooltipStyle} />
-        <Line isAnimationActive={false} type="monotone" dataKey="PCR (OI)" stroke={COLORS.ce} dot={false} strokeWidth={1.5} />
-        <Line isAnimationActive={false} type="monotone" dataKey="PCR (Volume)" stroke={COLORS.pe} dot={false} strokeWidth={1.5} />
-      </LineChart>
-    </ResponsiveContainer>
+    <div className="w-full h-full relative" onMouseLeave={() => onHover?.(null)}>
+      <ResponsiveContainer width="100%" height={height}>
+        <LineChart 
+          data={chartData}
+          onMouseMove={(e) => {
+            if (e && e.activePayload && e.activePayload.length > 0) {
+              onHover?.(e.activePayload[0].payload.fullDatetime);
+            } else {
+              onHover?.(null);
+            }
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+          <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+          <YAxis tick={axisStyle} tickLine={false} />
+          <Tooltip {...tooltipStyle} />
+          {activeTimeFormatted && (
+            <ReferenceLine x={activeTimeFormatted} stroke="rgba(59, 130, 246, 0.5)" strokeDasharray="4 4" />
+          )}
+          <Line isAnimationActive={false} type="monotone" dataKey="PCR (OI)" stroke={COLORS.ce} dot={false} strokeWidth={1.5} />
+          <Line isAnimationActive={false} type="monotone" dataKey="PCR (Volume)" stroke={COLORS.pe} dot={false} strokeWidth={1.5} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
-export function SpotChart({ data, height = 300 }: { data: { datetime: string[]; spot_close: number[]; atm: number[] }, height?: number | string }) {
+export function SpotChart({ data, height = 300, activeTime, onHover }: { data: { datetime: string[]; spot_close: number[]; atm: number[] }, height?: number | string, activeTime?: string | null, onHover?: (datetime: string | null) => void }) {
   const chartData = data.datetime.map((d, i) => ({
     time: d.slice(5),
+    fullDatetime: d,
     Spot: data.spot_close[i],
     ATM: data.atm[i],
   }));
 
+  const activeTimeFormatted = activeTime ? activeTime.slice(5) : null;
+
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-        <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
-        <YAxis domain={["auto", "auto"]} tick={axisStyle} tickLine={false} />
-        <Tooltip {...tooltipStyle} />
-        <Line isAnimationActive={false} type="monotone" dataKey="Spot" stroke={COLORS.spot} dot={false} strokeWidth={1.5} />
-        <Line isAnimationActive={false} type="monotone" dataKey="ATM" stroke={COLORS.neutral} dot={false} strokeWidth={1} strokeDasharray="5 5" />
-      </LineChart>
-    </ResponsiveContainer>
+    <div className="w-full h-full relative" onMouseLeave={() => onHover?.(null)}>
+      <ResponsiveContainer width="100%" height={height}>
+        <LineChart 
+          data={chartData}
+          onMouseMove={(e) => {
+            if (e && e.activePayload && e.activePayload.length > 0) {
+              onHover?.(e.activePayload[0].payload.fullDatetime);
+            } else {
+              onHover?.(null);
+            }
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+          <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+          <YAxis domain={["auto", "auto"]} tick={axisStyle} tickLine={false} />
+          <Tooltip {...tooltipStyle} />
+          {activeTimeFormatted && (
+            <ReferenceLine x={activeTimeFormatted} stroke="rgba(59, 130, 246, 0.5)" strokeDasharray="4 4" />
+          )}
+          <Line isAnimationActive={false} type="monotone" dataKey="Spot" stroke={COLORS.spot} dot={false} strokeWidth={1.5} />
+          <Line isAnimationActive={false} type="monotone" dataKey="ATM" stroke={COLORS.neutral} dot={false} strokeWidth={1} strokeDasharray="5 5" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
-export function StraddleChart({ data, height = 300 }: { data: { datetime: string[]; straddle: number[]; spot_close: number[] }, height?: number | string }) {
+export function StraddleChart({ data, height = 300, activeTime, onHover }: { data: { datetime: string[]; straddle: number[]; spot_close: number[] }, height?: number | string, activeTime?: string | null, onHover?: (datetime: string | null) => void }) {
   const chartData = data.datetime.map((d, i) => ({
     time: d.slice(5),
+    fullDatetime: d,
     Straddle: data.straddle[i],
     Spot: data.spot_close[i],
   }));
 
+  const activeTimeFormatted = activeTime ? activeTime.slice(5) : null;
+
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <ComposedChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-        <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
-        <YAxis yAxisId="left" tick={axisStyle} tickLine={false} />
-        <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickLine={false} domain={["auto", "auto"]} />
-        <Tooltip {...tooltipStyle} />
-        <Area isAnimationActive={false} yAxisId="left" type="monotone" dataKey="Straddle" fill={COLORS.straddle} stroke={COLORS.straddle} fillOpacity={0.15} />
-        <Line isAnimationActive={false} yAxisId="right" type="monotone" dataKey="Spot" stroke={COLORS.spot} dot={false} strokeWidth={1.5} />
-      </ComposedChart>
-    </ResponsiveContainer>
+    <div className="w-full h-full relative" onMouseLeave={() => onHover?.(null)}>
+      <ResponsiveContainer width="100%" height={height}>
+        <ComposedChart 
+          data={chartData}
+          onMouseMove={(e) => {
+            if (e && e.activePayload && e.activePayload.length > 0) {
+              onHover?.(e.activePayload[0].payload.fullDatetime);
+            } else {
+              onHover?.(null);
+            }
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+          <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+          <YAxis yAxisId="left" tick={axisStyle} tickLine={false} />
+          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickLine={false} domain={["auto", "auto"]} />
+          <Tooltip {...tooltipStyle} />
+          {activeTimeFormatted && (
+            <ReferenceLine x={activeTimeFormatted} stroke="rgba(59, 130, 246, 0.5)" strokeDasharray="4 4" yAxisId="left" />
+          )}
+          <Area isAnimationActive={false} yAxisId="left" type="monotone" dataKey="Straddle" fill={COLORS.straddle} stroke={COLORS.straddle} fillOpacity={0.15} />
+          <Line isAnimationActive={false} yAxisId="right" type="monotone" dataKey="Spot" stroke={COLORS.spot} dot={false} strokeWidth={1.5} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
-export function OIChangeChart({ data, height = 300 }: { data: { datetime: string[]; oi_CE_change: number[]; oi_PE_change: number[] }, height?: number | string }) {
+export function OIChangeChart({ data, height = 300, activeTime, onHover }: { data: { datetime: string[]; oi_CE_change: number[]; oi_PE_change: number[] }, height?: number | string, activeTime?: string | null, onHover?: (datetime: string | null) => void }) {
   const chartData = data.datetime.map((d, i) => ({
     time: d.slice(5),
+    fullDatetime: d,
     "CE OI Change": data.oi_CE_change[i],
     "PE OI Change": data.oi_PE_change[i],
   }));
+
+  const activeTimeFormatted = activeTime ? activeTime.slice(5) : null;
 
   const formatYAxis = (tickItem: number) => {
     if (Math.abs(tickItem) >= 1000000) return (tickItem / 1000000).toFixed(1) + 'M';
@@ -158,16 +212,30 @@ export function OIChangeChart({ data, height = 300 }: { data: { datetime: string
   };
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-        <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
-        <YAxis tick={axisStyle} tickLine={false} tickFormatter={formatYAxis} />
-        <Tooltip {...tooltipStyle} />
-        <Area isAnimationActive={false} type="monotone" dataKey="CE OI Change" stroke={COLORS.ce} fill={COLORS.ce} fillOpacity={0.2} strokeWidth={1.5} dot={false} />
-        <Area isAnimationActive={false} type="monotone" dataKey="PE OI Change" stroke={COLORS.pe} fill={COLORS.pe} fillOpacity={0.2} strokeWidth={1.5} dot={false} />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div className="w-full h-full relative" onMouseLeave={() => onHover?.(null)}>
+      <ResponsiveContainer width="100%" height={height}>
+        <AreaChart 
+          data={chartData}
+          onMouseMove={(e) => {
+            if (e && e.activePayload && e.activePayload.length > 0) {
+              onHover?.(e.activePayload[0].payload.fullDatetime);
+            } else {
+              onHover?.(null);
+            }
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+          <XAxis dataKey="time" tick={axisStyle} tickLine={false} interval="preserveStartEnd" />
+          <YAxis tick={axisStyle} tickLine={false} tickFormatter={formatYAxis} />
+          <Tooltip {...tooltipStyle} />
+          {activeTimeFormatted && (
+            <ReferenceLine x={activeTimeFormatted} stroke="rgba(59, 130, 246, 0.5)" strokeDasharray="4 4" />
+          )}
+          <Area isAnimationActive={false} type="monotone" dataKey="CE OI Change" stroke={COLORS.ce} fill={COLORS.ce} fillOpacity={0.2} strokeWidth={1.5} dot={false} />
+          <Area isAnimationActive={false} type="monotone" dataKey="PE OI Change" stroke={COLORS.pe} fill={COLORS.pe} fillOpacity={0.2} strokeWidth={1.5} dot={false} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 

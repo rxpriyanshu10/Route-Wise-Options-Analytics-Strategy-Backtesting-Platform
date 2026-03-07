@@ -12,12 +12,13 @@ const tooltipStyle = {
 };
 
 // --- Anomaly Timeline ---
-export function AnomalyTimeline({ data, height = "100%" }: { data: any; height?: number | string }) {
+export function AnomalyTimeline({ data, height = "100%", onHover }: { data: any; height?: number | string, onHover?: (datetime: string | null) => void }) {
   if (!data) return null;
   const { all, anomaly_count, total_snapshots } = data;
 
   const chartData = all.map((r: any) => ({
     time: r.datetime.slice(5, 16),
+    fullDatetime: r.datetime,
     score: r.anomaly_score,
     isAnomaly: r.is_anomaly,
   }));
@@ -29,9 +30,18 @@ export function AnomalyTimeline({ data, height = "100%" }: { data: any; height?:
         <span className="text-(--muted)">/ {total_snapshots} anomalies</span>
       </div>
       <div className="flex-1 min-h-0 relative">
-        <div className="absolute inset-0">
+        <div className="absolute inset-0" onMouseLeave={() => onHover?.(null)}>
           <ResponsiveContainer width="100%" height={height}>
-            <LineChart data={chartData}>
+            <LineChart 
+              data={chartData}
+              onMouseMove={(e) => {
+                if (e && e.activePayload && e.activePayload.length > 0) {
+                  onHover?.(e.activePayload[0].payload.fullDatetime);
+                } else {
+                  onHover?.(null);
+                }
+              }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
               <XAxis dataKey="time" tick={axisStyle} interval="preserveStartEnd" />
               <YAxis tick={axisStyle} domain={[0, 100]} />

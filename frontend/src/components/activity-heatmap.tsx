@@ -12,8 +12,8 @@ type Props = {
   data: HeatmapPoint[];
   atm?: number;
   label?: string;
-  unit?: string;
-};
+  unit?: string;  activeTime?: string | null;
+  onHover?: (time: string | null) => void;};
 
 function interpolateColor(t: number): string {
   // Dark-to-bright: black -> purple -> blue -> cyan -> green -> yellow
@@ -42,7 +42,7 @@ function fmtValue(v: number): string {
   return v.toFixed(0);
 }
 
-export function ActivityHeatmap({ data, atm, label = "Value", unit = "" }: Props) {
+export function ActivityHeatmap({ data, atm, label = "Value", unit = "", activeTime, onHover }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 600, height: 300 });
   const [tooltip, setTooltip] = useState<{
@@ -109,6 +109,23 @@ export function ActivityHeatmap({ data, atm, label = "Value", unit = "" }: Props
   const xLabelStep = Math.max(1, Math.floor(times.length / 8));
   const yLabelStep = Math.max(1, Math.floor(strikes.length / 10));
 
+  const activeTimeIdx = useMemo(() => {
+    if (!activeTime || times.length === 0) return -1;
+    const targetMs = Date.parse(activeTime);
+    if (isNaN(targetMs)) return -1;
+    let bestIdx = 0;
+    let minDiff = Infinity;
+    for (let i = 0; i < times.length; i++) {
+      const ms = Date.parse(times[i]);
+      const diff = Math.abs(ms - targetMs);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }, [activeTime, times]);
+
   return (
     <div ref={containerRef} className="w-full h-full relative">
       <svg
@@ -130,12 +147,14 @@ export function ActivityHeatmap({ data, atm, label = "Value", unit = "" }: Props
             const point = grid.find((g) => g.ti === ti && g.si === si);
             if (point) {
               setTooltip({ x: mx, y: my, strike: point.strike, time: point.time, value: point.value });
+              onHover?.(point.time);
               return;
             }
           }
           setTooltip(null);
+          onHover?.(null);
         }}
-        onMouseLeave={() => setTooltip(null)}
+        onMouseLeave={() => { setTooltip(null); onHover?.(null); }}
       >
         {grid.map((g, i) => {
           const t = maxVal > minVal ? (g.value - minVal) / (maxVal - minVal) : 0.5;
@@ -150,6 +169,21 @@ export function ActivityHeatmap({ data, atm, label = "Value", unit = "" }: Props
             />
           );
         })}
+
+        {/* Active Time Highlight */}
+        {activeTimeIdx >= 0 && (
+          <rect
+            x={margin.left + activeTimeIdx * cellW}
+            y={margin.top}
+            width={cellW}
+            height={plotH}
+            fill="rgba(59, 130, 246, 0.15)"
+            stroke="rgba(59, 130, 246, 0.5)"
+            strokeWidth={1}
+            strokeDasharray="4 4"
+            pointerEvents="none"
+          />
+        )}
 
         {atm && strikes.includes(atm) && (
           <line

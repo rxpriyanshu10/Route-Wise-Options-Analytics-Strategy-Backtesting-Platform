@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CandlestickChart, TableProperties, MessageSquare } from "lucide-react";
+import { LayoutDashboard, CandlestickChart, TableProperties, MessageSquare, FlaskConical } from "lucide-react";
 
 const links = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/chain", label: "Chain", icon: TableProperties },
+  { href: "/strategies", label: "Strategies", icon: FlaskConical },
   { href: "/chat", label: "Chat", icon: MessageSquare },
 ];
 

@@ -1,72 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #09090b;
-  --fg: #fafafa;
-  --muted: #71717a;
-  --border: #27272a;
-  --card: #0c0c0e;
-  --card-hover: #131316;
-  --accent: #a1a1aa;
+  --bg: #0a0a0a;
+  --fg: #ededed;
+  --muted: #888;
+  --border: #222;
+  --card: #111;
+  --accent: #3b82f6;
   --green: #22c55e;
   --red: #ef4444;
-  --amber: #f59e0b;
-  --blue: #3b82f6;
-  --ring: #3f3f46;
 }
 
 body {
   background: var(--bg);
   color: var(--fg);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  line-height: 1.6;
-}
-
-.font-mono {
-  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 /* Recharts tooltip fix */
 .recharts-tooltip-wrapper {
   z-index: 100 !important;
-}
-
-/* Focus ring for accessibility */
-*:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* Skeleton loading animation */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(90deg, var(--card) 25%, var(--border) 50%, var(--card) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 4px;
-}
-
-/* Scrollbar styling */
-.hidden-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.hidden-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.hidden-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-}
-.hidden-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
-}
-
-/* Smooth transitions */
-select, button, a, input {
-  transition: all 200ms ease;
 }

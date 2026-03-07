@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useRef } from "react";
 import { Maximize2, X } from "lucide-react";
 
 export function ChartCard({
@@ -19,6 +19,8 @@ export function ChartCard({
   headerRight?: ReactNode;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!expanded) return;
@@ -71,12 +73,36 @@ export function ChartCard({
               <div className="skeleton h-2 w-3/5" />
             </div>
           ) : (
-            <p className="text-[9px] text-(--accent) leading-snug px-0.5 line-clamp-2" title={insight}>
+            <p 
+              className="text-[9px] text-(--accent) leading-snug px-0.5 line-clamp-2 cursor-default" 
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                // Position popup relative to viewport
+                setTooltipPos({ x: e.clientX, y: rect.top - 10 });
+                setShowTooltip(true);
+              }}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
               {insight}
             </p>
           )}
         </div>
       )}
+      
+      {/* Tooltip Portal / Overlay */}
+      {showTooltip && insight && !expanded && (
+        <div 
+          className="fixed z-50 bg-(--card) border border-(--border) rounded-md p-2 shadow-lg max-w-[300px] pointer-events-none"
+          style={{ 
+            left: Math.min(tooltipPos.x, typeof window !== 'undefined' ? window.innerWidth - 320 : tooltipPos.x), 
+            top: tooltipPos.y,
+            transform: 'translateY(-100%)'
+          }}
+        >
+          <p className="text-[10px] text-(--fg) leading-relaxed">{insight}</p>
+        </div>
+      )}
+
       {expanded && insight && (
         <div className="shrink-0 mt-2 border-t border-(--border) pt-2">
           <p className="text-xs text-(--accent) leading-relaxed px-0.5">{insight}</p>

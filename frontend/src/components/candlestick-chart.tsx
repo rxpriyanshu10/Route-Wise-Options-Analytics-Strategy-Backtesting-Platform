@@ -37,9 +37,11 @@ const SIGNAL_COLORS: Record<string, string> = {
 export function CandlestickChart({
   data,
   patterns = [],
+  activeTime = null,
 }: {
   data: CandleData[];
   patterns?: PatternMarker[];
+  activeTime?: string | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
@@ -97,6 +99,24 @@ export function CandlestickChart({
       Math.round(minPrice + i * step)
     );
   }, [minPrice, priceRange]);
+
+  const activeIndex = useMemo(() => {
+    if (!activeTime || !data.length) return -1;
+    const targetMs = Date.parse(activeTime);
+    if (isNaN(targetMs)) return -1;
+    // Find the candle that's closest or encompasses this time
+    let bestIdx = 0;
+    let minDiff = Infinity;
+    for (let i = 0; i < data.length; i++) {
+      const candleMs = Date.parse(data[i].datetime);
+      const diff = Math.abs(candleMs - targetMs);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }, [activeTime, data]);
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<SVGSVGElement>) => {
@@ -160,6 +180,21 @@ export function CandlestickChart({
             </g>
           );
         })}
+
+        {/* Active Time Highlight */}
+        {activeIndex >= 0 && (
+          <rect
+            x={margin.left + activeIndex * (Math.max(width - margin.left - margin.right, 0) / data.length)}
+            y={margin.top}
+            width={Math.max(width - margin.left - margin.right, 0) / data.length}
+            height={Math.max(height - margin.top - margin.bottom, 0)}
+            fill="rgba(59, 130, 246, 0.15)"
+            stroke="rgba(59, 130, 246, 0.5)"
+            strokeWidth={1}
+            strokeDasharray="4 4"
+            pointerEvents="none"
+          />
+        )}
 
         {/* Candles */}
         {data.map((candle, i) => {

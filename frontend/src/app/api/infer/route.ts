@@ -15,8 +15,8 @@ export async function POST(req: Request) {
   // Process all panels in parallel
   const tasks = panels.map(async (panel) => {
     try {
-      const { text } = await generateText({
-        model: openrouter.chat("google/gemini-2.5-flash-lite") as any,
+      const { text } = await (generateText as any)({
+        model: openrouter.chat("google/gemini-2.5-flash-lite"),
         system: SYSTEM,
         prompt: `Dashboard panel: "${panel.title}"\n\nData:\n${panel.summary}`,
         maxTokens: 120,

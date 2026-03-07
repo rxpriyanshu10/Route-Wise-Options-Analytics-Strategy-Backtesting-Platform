@@ -73,6 +73,7 @@ export default function Dashboard() {
   const [heatmapData, setHeatmapData] = useState<any>(null);
   const [heatmapMetric, setHeatmapMetric] = useState("oi_CE");
   const [rightPanelTab, setRightPanelTab] = useState<"overview" | "greeks" | "ml">("overview");
+  const [hoveredTime, setHoveredTime] = useState<string | null>(null);
   const { insights, loading: insightsLoading, fetchInferences } = useInferences();
 
   // Persisted layouts — storage must be undefined during SSR
@@ -190,15 +191,22 @@ export default function Dashboard() {
         summary: `OI change tracked over ${oiChangeData.datetime?.length || 0} snapshots. Tracks CE and PE open interest delta to detect buildup/unwinding patterns.`,
       });
     }
+    if (heatmapData) {
+      panels.push({
+        id: "heatmap",
+        title: "Activity Heatmap",
+        summary: `Heatmap showing ${heatmapMetric} activity over time across ${new Set(heatmapData.data?.map((d: any) => d.strike)).size} strikes and ${new Set(heatmapData.data?.map((d: any) => d.datetime)).size} time periods. ATM strike is ${heatmapData.atm}. Find patterns where density changes abruptly.`,
+      });
+    }
 
     if (panels.length > 0) fetchInferences(panels);
-  }, [anomalyData, greeksData, parityData, pcrData, oiData, oiChangeData, fetchInferences]);
+  }, [anomalyData, greeksData, parityData, pcrData, oiData, oiChangeData, heatmapData, heatmapMetric, fetchInferences]);
 
   useEffect(() => {
     if (anomalyData && pcrData && oiData) {
       requestInferences();
     }
-  }, [anomalyData, pcrData, oiData, requestInferences]);
+  }, [anomalyData, pcrData, oiData, heatmapData, requestInferences]);
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-(--bg) text-sm font-sans">
@@ -275,6 +283,7 @@ export default function Dashboard() {
                           signal: p.signal,
                           inference: p.inference,
                         }))}
+                        activeTime={hoveredTime}
                       />
                     </div>
                   </div>
@@ -321,7 +330,7 @@ export default function Dashboard() {
                         {spotData ? (
                           <ChartCard title="Spot & ATM" className="flex-1">
                             <div className="absolute inset-0">
-                              <SpotChart data={spotData} height="100%" />
+                              <SpotChart data={spotData} height="100%" activeTime={hoveredTime} onHover={setHoveredTime} />
                             </div>
                           </ChartCard>
                         ) : (
@@ -330,7 +339,7 @@ export default function Dashboard() {
                         {pcrData ? (
                           <ChartCard title="PCR" className="flex-1" insight={insights.pcr} insightLoading={insightsLoading}>
                             <div className="absolute inset-0">
-                              <PCRChart data={pcrData} height="100%" />
+                              <PCRChart data={pcrData} height="100%" activeTime={hoveredTime} onHover={setHoveredTime} />
                             </div>
                           </ChartCard>
                         ) : (
@@ -367,17 +376,18 @@ export default function Dashboard() {
                         {oiChangeData ? (
                           <ChartCard title="OI Change" className="flex-1" insight={insights.oiChange} insightLoading={insightsLoading}>
                             <div className="absolute inset-0">
-                              <OIChangeChart data={oiChangeData} height="100%" />
+                              <OIChangeChart data={oiChangeData} height="100%" activeTime={hoveredTime} onHover={setHoveredTime} />
                             </div>
                           </ChartCard>
                         ) : (
                           <ChartCardSkeleton className="flex-1" />
                         )}
-                        <ChartCard title="" className="flex-1">
-                          <div className="flex items-center justify-between mb-1.5 shrink-0">
-                            <h3 className="font-mono text-(--muted) text-[11px] uppercase tracking-wider">
-                              Activity Heatmap
-                            </h3>
+                        <ChartCard
+                          title="Activity Heatmap"
+                          className="flex-1"
+                          insight={insights.heatmap}
+                          insightLoading={insightsLoading}
+                          headerRight={
                             <div className="flex items-center gap-1">
                               {([
                                 { key: "oi_CE", label: "OI CE" },
@@ -398,7 +408,8 @@ export default function Dashboard() {
                                 </button>
                               ))}
                             </div>
-                          </div>
+                          }
+                        >
                           <div className="flex-1 min-h-0 relative">
                             <div className="absolute inset-0">
                               {heatmapData?.data?.length ? (
@@ -482,7 +493,7 @@ export default function Dashboard() {
                       {anomalyData ? (
                         <ChartCard title="Anomaly Score" className="h-full">
                           <div className="absolute inset-0">
-                            <AnomalyTimeline data={anomalyData} height="100%" />
+                            <AnomalyTimeline data={anomalyData} height="100%" onHover={setHoveredTime} />
                           </div>
                         </ChartCard>
                       ) : (

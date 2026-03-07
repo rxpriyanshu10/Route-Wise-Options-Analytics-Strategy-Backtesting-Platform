@@ -12,6 +12,8 @@ import redis
 load_dotenv()
 from ml_models import AnomalyDetector
 from greeks import implied_volatility, compute_greeks, bs_call, bs_put, RISK_FREE_RATE
+from strategies import generate_strategies, compute_custom_payoff
+from backtester import backtest_strategy, optimize_strategy
 
 app = FastAPI(title="OpenQuant Options Analytics API")
 
@@ -1004,3 +1006,188 @@ def get_activity_heatmap(
     response = {"count": len(data), "data": data, "atm": atm, "metric": metric}
     rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
     return response
+
+
+@app.get("/api/strategies")
+def get_strategies(
+    expiry: Optional[str] = None,
+    datetime_str: Optional[str] = Query(None, alias="datetime"),
+):
+    """Generate all predefined option strategies from current option chain."""
+    cache_key = f"strategies:{expiry or 'all'}:{datetime_str or 'latest'}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    # Get option chain data
+    chain = get_option_chain(expiry=expiry, datetime_str=datetime_str)
+    if not chain.get("chain"):
+        return {"strategies": [], "spot": None, "atm": None}
+
+    strategies = generate_strategies(chain["chain"], chain["spot"], chain["atm"])
+
+    response = {
+        "spot": chain["spot"],
+        "atm": chain["atm"],
+        "datetime": chain["datetime"],
+        "expiry": chain["expiry"],
+        "strategies": strategies,
+    }
+    rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(response))
+    return response
+
+
+@app.post("/api/strategy-payoff")
+def post_strategy_payoff(payload: dict):
+    """Compute payoff diagram for user-defined strategy legs.
+
+    Body: { "legs": [...], "spot": float }
+    Each leg: { "type": "CE"/"PE", "strike": float, "action": "buy"/"sell", "qty": int, "premium": float }
+    """
+    legs = payload.get("legs", [])
+    spot = payload.get("spot", 0)
+    if not legs:
+        return {"error": "No legs provided"}
+    result = compute_custom_payoff(legs, spot)
+    return result
+
+
+@app.get("/api/backtest")
+def run_backtest(
+    expiry: Optional[str] = None,
+    strategy_id: Optional[str] = None,
+    entry_datetime: Optional[str] = Query(None, alias="entry"),
+    exit_datetime: Optional[str] = Query(None, alias="exit"),
+):
+    """Run a backtest for a predefined strategy.
+
+    1. Fetches option chain at entry_datetime
+    2. Generates the strategy
+    3. Walks through all subsequent snapshots computing P&L
+    """
+    if not expiry or not strategy_id or not entry_datetime:
+        return {"error": "expiry, strategy_id, and entry datetime are required"}
+
+    cache_key = f"backtest:{expiry}:{strategy_id}:{entry_datetime}:{exit_datetime or 'end'}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    # Get strategies at entry point
+    strats_resp = get_strategies(expiry=expiry, datetime_str=entry_datetime)
+    strategies = strats_resp.get("strategies", [])
+    target = next((s for s in strategies if s["id"] == strategy_id), None)
+    if not target:
+        return {"error": f"Strategy '{strategy_id}' not found at entry datetime"}
+
+    # Build legs for backtester
+    legs = [
+        {
+            "type": leg["type"],
+            "strike": leg["strike"],
+            "action": leg["action"],
+            "qty": leg["qty"],
+            "premium": leg["premium"],
+        }
+        for leg in target["legs"]
+    ]
+
+    result = backtest_strategy(
+        df=df,
+        legs=legs,
+        entry_datetime=entry_datetime,
+        expiry=expiry,
+        exit_datetime=exit_datetime,
+    )
+
+    result["strategy"] = {
+        "id": target["id"],
+        "name": target["name"],
+        "sentiment": target["sentiment"],
+        "legs": target["legs"],
+        "net_premium": target["net_premium"],
+    }
+
+    rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(result))
+    return result
+
+
+@app.post("/api/backtest/custom")
+def run_custom_backtest(payload: dict):
+    """Run a backtest for user-defined strategy legs.
+
+    Body: {
+        "expiry": str,
+        "entry": str (datetime),
+        "exit": str (datetime, optional),
+        "legs": [{ "type": "CE"/"PE", "strike": float, "action": "buy"/"sell", "qty": int, "premium": float }]
+    }
+    """
+    expiry = payload.get("expiry")
+    entry_datetime = payload.get("entry")
+    exit_datetime = payload.get("exit")
+    legs = payload.get("legs", [])
+
+    if not expiry or not entry_datetime or not legs:
+        return {"error": "expiry, entry datetime, and legs are required"}
+
+    result = backtest_strategy(
+        df=df,
+        legs=legs,
+        entry_datetime=entry_datetime,
+        expiry=expiry,
+        exit_datetime=exit_datetime,
+    )
+
+    result["strategy"] = {
+        "id": "custom",
+        "name": "Custom Strategy",
+        "sentiment": "custom",
+        "legs": legs,
+        "net_premium": round(sum(
+            (-1 if l["action"] == "buy" else 1) * l["premium"] * l.get("qty", 1)
+            for l in legs
+        ), 2),
+    }
+    return result
+
+
+@app.get("/api/backtest/datetimes")
+def get_backtest_datetimes(expiry: Optional[str] = None):
+    """Get available entry datetimes for backtesting (sampled for UI)."""
+    filtered = df.copy()
+    if expiry:
+        filtered = filtered[filtered["expiry"] == expiry]
+    dts = sorted(filtered["datetime"].unique())
+    # Sample to keep list manageable
+    step = max(1, len(dts) // 200)
+    sampled = dts[::step]
+    return [str(dt) for dt in sampled]
+
+
+@app.get("/api/strategy/optimize")
+def optimize_strategy_endpoint(
+    expiry: Optional[str] = None,
+    strategy_id: Optional[str] = None,
+):
+    """Find the best entry time and holding period for a strategy."""
+    if not expiry or not strategy_id:
+        return {"error": "expiry and strategy_id are required"}
+
+    cache_key = f"optimize:{expiry}:{strategy_id}"
+    cached = rcache.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    result = optimize_strategy(
+        df=df,
+        strategy_id=strategy_id,
+        expiry=expiry,
+        get_option_chain_fn=get_option_chain,
+    )
+
+    if "error" not in result:
+        rcache.setex(cache_key, ML_CACHE_TTL, json.dumps(result))
+    return result
+
+
