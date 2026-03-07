@@ -17,6 +17,7 @@ import { GreeksSummary, IVSmileChart, ParityList, MispricingChart } from "@/comp
 import { useInferences } from "@/hooks/use-inferences";
 import { fetchAPI } from "@/lib/api";
 import { Activity, TrendingUp, BarChart3, ChevronDown } from "lucide-react";
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
 
 type Overview = {
   total_rows: number;
@@ -31,6 +32,24 @@ const TABS = [
   { key: "greeks", label: "Greeks & Parity", icon: TrendingUp },
   { key: "ml", label: "Intelligence", icon: Activity },
 ] as const;
+
+function ResizeHandle({ direction = "horizontal" }: { direction?: "horizontal" | "vertical" }) {
+  return (
+    <PanelResizeHandle
+      className={`group relative flex items-center justify-center ${
+        direction === "horizontal" ? "w-1.5" : "h-1.5"
+      }`}
+    >
+      <div
+        className={`rounded-full bg-(--border) group-hover:bg-(--muted) group-data-resize-handle-active:bg-(--ring) transition-all duration-150 ${
+          direction === "horizontal"
+            ? "w-0.5 h-8 group-hover:h-12 group-hover:w-1"
+            : "h-0.5 w-8 group-hover:w-12 group-hover:h-1"
+        }`}
+      />
+    </PanelResizeHandle>
+  );
+}
 
 export default function Dashboard() {
   const [overview, setOverview] = useState<Overview | null>(null);
@@ -192,193 +211,199 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Main grid */}
-        <div className="flex-1 flex gap-2 h-full overflow-hidden">
-          {/* Left Column: Candlestick Chart */}
-          <div className="flex-3 flex flex-col gap-2 min-w-0">
-            {candleData ? (
-              <ChartCard title="" className="flex-1">
-                <div className="flex items-center justify-between mb-2 shrink-0 px-1">
-                  <h3 className="font-mono text-(--muted) text-[10px] uppercase tracking-wider">
-                    NIFTY Spot / Candles
-                  </h3>
-                  <div className="flex items-center gap-1">
-                    {["15T", "30T", "1H", "1D"].map((iv) => (
-                      <button
-                        key={iv}
-                        onClick={() => setCandleInterval(iv)}
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono cursor-pointer transition-colors ${
-                          candleInterval === iv
-                            ? "bg-(--border) text-(--fg)"
-                            : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
-                        }`}
-                      >
-                        {iv === "15T" ? "15m" : iv === "30T" ? "30m" : iv}
-                      </button>
-                    ))}
+        {/* Main resizable layout */}
+        <PanelGroup direction="horizontal" className="flex-1 min-h-0">
+          {/* Left Panel: Candlestick Chart */}
+          <Panel defaultSize={55} minSize={30}>
+            <div className="h-full flex flex-col gap-2">
+              {candleData ? (
+                <ChartCard title="" className="flex-1">
+                  <div className="flex items-center justify-between mb-2 shrink-0 px-1">
+                    <h3 className="font-mono text-(--muted) text-[10px] uppercase tracking-wider">
+                      NIFTY Spot / Candles
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      {["15T", "30T", "1H", "1D"].map((iv) => (
+                        <button
+                          key={iv}
+                          onClick={() => setCandleInterval(iv)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono cursor-pointer transition-colors ${
+                            candleInterval === iv
+                              ? "bg-(--border) text-(--fg)"
+                              : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
+                          }`}
+                        >
+                          {iv === "15T" ? "15m" : iv === "30T" ? "30m" : iv}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1 min-h-0 relative">
-                  <div className="absolute inset-0">
-                    <CandlestickChart
-                      data={candleData.candles.datetime.map((dt: string, i: number) => ({
-                        datetime: dt,
-                        open: candleData.candles.open[i],
-                        high: candleData.candles.high[i],
-                        low: candleData.candles.low[i],
-                        close: candleData.candles.close[i],
-                      }))}
-                      patterns={candleData.patterns.map((p: any) => ({
-                        datetime: p.datetime,
-                        pattern: p.pattern,
-                        signal: p.signal,
-                        inference: p.inference,
-                      }))}
-                    />
+                  <div className="flex-1 min-h-0 relative">
+                    <div className="absolute inset-0">
+                      <CandlestickChart
+                        data={candleData.candles.datetime.map((dt: string, i: number) => ({
+                          datetime: dt,
+                          open: candleData.candles.open[i],
+                          high: candleData.candles.high[i],
+                          low: candleData.candles.low[i],
+                          close: candleData.candles.close[i],
+                        }))}
+                        patterns={candleData.patterns.map((p: any) => ({
+                          datetime: p.datetime,
+                          pattern: p.pattern,
+                          signal: p.signal,
+                          inference: p.inference,
+                        }))}
+                      />
+                    </div>
                   </div>
-                </div>
-              </ChartCard>
-            ) : (
-              <ChartCardSkeleton className="flex-1" />
-            )}
-          </div>
-
-          {/* Right Column: Tabbed panels */}
-          <div className="flex-[2] flex flex-col gap-2 min-w-0">
-            {/* Tabs */}
-            <div className="flex gap-1 shrink-0 px-1">
-              {TABS.map((tab) => {
-                const Icon = tab.icon;
-                const active = rightPanelTab === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    onClick={() => setRightPanelTab(tab.key as any)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors cursor-pointer ${
-                      active
-                        ? "bg-(--border) text-(--fg)"
-                        : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
-                    }`}
-                  >
-                    <Icon size={12} strokeWidth={active ? 2 : 1.5} />
-                    {tab.label}
-                  </button>
-                );
-              })}
+                </ChartCard>
+              ) : (
+                <ChartCardSkeleton className="flex-1" />
+              )}
             </div>
+          </Panel>
 
-            {/* Panel content */}
-            <div className="flex-1 grid grid-cols-2 auto-rows-fr gap-2 min-w-0 overflow-y-auto hidden-scrollbar">
-              {rightPanelTab === "ml" && (
-                <>
-                  <ChartCard title="Anomalies" className="col-span-2" insight={insights.anomalies} insightLoading={insightsLoading}>
+          <ResizeHandle />
+
+          {/* Right Panel: Tabbed panels */}
+          <Panel defaultSize={45} minSize={25}>
+            <div className="h-full flex flex-col gap-2">
+              {/* Tabs */}
+              <div className="flex gap-1 shrink-0 px-1">
+                {TABS.map((tab) => {
+                  const Icon = tab.icon;
+                  const active = rightPanelTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setRightPanelTab(tab.key as any)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors cursor-pointer ${
+                        active
+                          ? "bg-(--border) text-(--fg)"
+                          : "text-(--muted) hover:text-(--fg) hover:bg-(--card-hover)"
+                      }`}
+                    >
+                      <Icon size={12} strokeWidth={active ? 2 : 1.5} />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Panel content */}
+              <div className="flex-1 grid grid-cols-2 auto-rows-fr gap-2 min-w-0 overflow-y-auto hidden-scrollbar">
+                {rightPanelTab === "ml" && (
+                  <>
+                    <ChartCard title="Anomalies" className="col-span-2" insight={insights.anomalies} insightLoading={insightsLoading}>
+                      {anomalyData ? (
+                        <AnomalyList anomalies={anomalyData?.anomalies} />
+                      ) : (
+                        <div className="skeleton h-full min-h-15" />
+                      )}
+                    </ChartCard>
                     {anomalyData ? (
-                      <AnomalyList anomalies={anomalyData?.anomalies} />
+                      <ChartCard title="Anomaly Score" className="col-span-2">
+                        <div className="absolute inset-0">
+                          <AnomalyTimeline data={anomalyData} height="100%" />
+                        </div>
+                      </ChartCard>
                     ) : (
-                      <div className="skeleton h-full min-h-15" />
+                      <ChartCardSkeleton className="col-span-2" />
                     )}
-                  </ChartCard>
-                  {anomalyData ? (
-                    <ChartCard title="Anomaly Score" className="col-span-2">
-                      <div className="absolute inset-0">
-                        <AnomalyTimeline data={anomalyData} height="100%" />
-                      </div>
-                    </ChartCard>
-                  ) : (
-                    <ChartCardSkeleton className="col-span-2" />
-                  )}
-                </>
-              )}
+                  </>
+                )}
 
-              {rightPanelTab === "greeks" && (
-                <>
-                  <ChartCard title="ATM Greeks" insight={insights.greeks} insightLoading={insightsLoading}>
-                    {greeksData ? (
-                      <GreeksSummary data={greeksData} />
-                    ) : (
-                      <div className="skeleton h-full min-h-15" />
-                    )}
-                  </ChartCard>
-                  <ChartCard title="IV Smile" insight={insights.ivSmile} insightLoading={insightsLoading}>
-                    {greeksData ? (
-                      <div className="absolute inset-0">
-                        <IVSmileChart data={greeksData} height="100%" />
-                      </div>
-                    ) : (
-                      <div className="skeleton h-full min-h-15" />
-                    )}
-                  </ChartCard>
-                  <ChartCard title="Arbitrage" insight={insights.parity} insightLoading={insightsLoading}>
-                    {parityData ? (
-                      <ParityList data={parityData} />
-                    ) : (
-                      <div className="skeleton h-full min-h-15" />
-                    )}
-                  </ChartCard>
-                  <ChartCard title="Mispricing">
-                    {parityData ? (
-                      <div className="absolute inset-0">
-                        <MispricingChart data={parityData} height="100%" />
-                      </div>
-                    ) : (
-                      <div className="skeleton h-full min-h-15" />
-                    )}
-                  </ChartCard>
-                </>
-              )}
+                {rightPanelTab === "greeks" && (
+                  <>
+                    <ChartCard title="ATM Greeks" insight={insights.greeks} insightLoading={insightsLoading}>
+                      {greeksData ? (
+                        <GreeksSummary data={greeksData} />
+                      ) : (
+                        <div className="skeleton h-full min-h-15" />
+                      )}
+                    </ChartCard>
+                    <ChartCard title="IV Smile" insight={insights.ivSmile} insightLoading={insightsLoading}>
+                      {greeksData ? (
+                        <div className="absolute inset-0">
+                          <IVSmileChart data={greeksData} height="100%" />
+                        </div>
+                      ) : (
+                        <div className="skeleton h-full min-h-15" />
+                      )}
+                    </ChartCard>
+                    <ChartCard title="Arbitrage" insight={insights.parity} insightLoading={insightsLoading}>
+                      {parityData ? (
+                        <ParityList data={parityData} />
+                      ) : (
+                        <div className="skeleton h-full min-h-15" />
+                      )}
+                    </ChartCard>
+                    <ChartCard title="Mispricing">
+                      {parityData ? (
+                        <div className="absolute inset-0">
+                          <MispricingChart data={parityData} height="100%" />
+                        </div>
+                      ) : (
+                        <div className="skeleton h-full min-h-15" />
+                      )}
+                    </ChartCard>
+                  </>
+                )}
 
-              {rightPanelTab === "overview" && (
-                <>
-                  {spotData ? (
-                    <ChartCard title="Spot & ATM">
-                      <div className="absolute inset-0">
-                        <SpotChart data={spotData} height="100%" />
-                      </div>
-                    </ChartCard>
-                  ) : (
-                    <ChartCardSkeleton />
-                  )}
-                  {pcrData ? (
-                    <ChartCard title="PCR" insight={insights.pcr} insightLoading={insightsLoading}>
-                      <div className="absolute inset-0">
-                        <PCRChart data={pcrData} height="100%" />
-                      </div>
-                    </ChartCard>
-                  ) : (
-                    <ChartCardSkeleton />
-                  )}
-                  {oiData ? (
-                    <ChartCard title="OI by Strike" insight={insights.oi} insightLoading={insightsLoading}>
-                      <div className="absolute inset-0">
-                        <OIByStrikeChart data={oiData} height="100%" />
-                      </div>
-                    </ChartCard>
-                  ) : (
-                    <ChartCardSkeleton />
-                  )}
-                  {volumeData ? (
-                    <ChartCard title="Vol by Strike">
-                      <div className="absolute inset-0">
-                        <VolumeByStrikeChart data={volumeData} height="100%" />
-                      </div>
-                    </ChartCard>
-                  ) : (
-                    <ChartCardSkeleton />
-                  )}
-                  {oiChangeData ? (
-                    <ChartCard title="OI Change" className="col-span-2" insight={insights.oiChange} insightLoading={insightsLoading}>
-                      <div className="absolute inset-0">
-                        <OIChangeChart data={oiChangeData} height="100%" />
-                      </div>
-                    </ChartCard>
-                  ) : (
-                    <ChartCardSkeleton className="col-span-2" />
-                  )}
-                </>
-              )}
+                {rightPanelTab === "overview" && (
+                  <>
+                    {spotData ? (
+                      <ChartCard title="Spot & ATM">
+                        <div className="absolute inset-0">
+                          <SpotChart data={spotData} height="100%" />
+                        </div>
+                      </ChartCard>
+                    ) : (
+                      <ChartCardSkeleton />
+                    )}
+                    {pcrData ? (
+                      <ChartCard title="PCR" insight={insights.pcr} insightLoading={insightsLoading}>
+                        <div className="absolute inset-0">
+                          <PCRChart data={pcrData} height="100%" />
+                        </div>
+                      </ChartCard>
+                    ) : (
+                      <ChartCardSkeleton />
+                    )}
+                    {oiData ? (
+                      <ChartCard title="OI by Strike" insight={insights.oi} insightLoading={insightsLoading}>
+                        <div className="absolute inset-0">
+                          <OIByStrikeChart data={oiData} height="100%" />
+                        </div>
+                      </ChartCard>
+                    ) : (
+                      <ChartCardSkeleton />
+                    )}
+                    {volumeData ? (
+                      <ChartCard title="Vol by Strike">
+                        <div className="absolute inset-0">
+                          <VolumeByStrikeChart data={volumeData} height="100%" />
+                        </div>
+                      </ChartCard>
+                    ) : (
+                      <ChartCardSkeleton />
+                    )}
+                    {oiChangeData ? (
+                      <ChartCard title="OI Change" className="col-span-2" insight={insights.oiChange} insightLoading={insightsLoading}>
+                        <div className="absolute inset-0">
+                          <OIChangeChart data={oiChangeData} height="100%" />
+                        </div>
+                      </ChartCard>
+                    ) : (
+                      <ChartCardSkeleton className="col-span-2" />
+                    )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          </Panel>
+        </PanelGroup>
       </main>
     </div>
   );

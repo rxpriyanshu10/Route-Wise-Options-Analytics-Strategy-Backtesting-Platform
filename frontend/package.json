@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/openai": "^3.0.41",
     "@ai-sdk/react": "^3.0.118",
     "@openrouter/ai-sdk-provider": "^2.2.5",
     "ai": "^6.0.121",
@@ -16,6 +18,7 @@
     "next": "^15.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-resizable-panels": "^4.7.1",
     "recharts": "^2.15.0",
     "zod": "^3.25.76"
   },

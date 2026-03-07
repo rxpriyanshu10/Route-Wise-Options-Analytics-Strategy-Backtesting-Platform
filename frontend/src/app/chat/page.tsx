@@ -77,7 +77,7 @@ export default function ChatPage() {
                 </div>
               ) : (
                 <div className="space-y-3 max-w-[90%]">
-                  {message.parts.map((part, i) => {
+                  {message.parts.map((part: any, i: number) => {
                     if (part.type === "text" && part.text) {
                       return (
                         <div
@@ -89,11 +89,14 @@ export default function ChatPage() {
                       );
                     }
 
-                    if (part.type === "tool-invocation") {
-                      const { toolInvocation } = part as any;
-                      const { toolName, args, state } = toolInvocation;
+                    // v6: tool parts come as "tool-{name}" or "dynamic-tool"
+                    const isToolPart = part.type === "dynamic-tool" || part.type?.startsWith("tool-");
+                    if (isToolPart) {
+                      const toolName = part.toolName;
+                      const state = part.state;
+                      const args = part.input;
 
-                      if (toolName === "createChart" && state !== "partial-call" && args?.data && args?.xKey && args?.yKeys) {
+                      if (toolName === "createChart" && state === "result" && args?.data && args?.xKey && args?.yKeys) {
                         return (
                           <div
                             key={i}
@@ -116,7 +119,7 @@ export default function ChatPage() {
                         );
                       }
 
-                      if (state === "call" || state === "partial-call") {
+                      if (state === "call" || state === "input-streaming") {
                         return (
                           <div
                             key={i}
