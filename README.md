@@ -10,17 +10,13 @@ It combines a **FastAPI + Python analytics backend** with a **Next.js 15 + React
 
 ### Dashboard
 
-<p align="center">
-	<img src="assets/dashboard1.png" alt="OpenQuant dashboard screenshot 1" width="48%" />
-	<img src="assets/dashboard2.png" alt="OpenQuant dashboard screenshot 2" width="48%" />
-</p>
+<img src="assets/dashboard1.png" alt="OpenQuant dashboard screenshot 1" />
+<img src="assets/dashboard2.png" alt="OpenQuant dashboard screenshot 2" />
 
 ### Strategies
 
-<p align="center">
-	<img src="assets/strategy1.png" alt="OpenQuant strategy screenshot 1" width="48%" />
-	<img src="assets/strategy2.png" alt="OpenQuant strategy screenshot 2" width="48%" />
-</p>
+<img src="assets/strategy1.png" alt="OpenQuant strategy screenshot 1"/>
+<img src="assets/strategy2.png" alt="OpenQuant strategy screenshot 2" />
 
 ## Highlights
 
