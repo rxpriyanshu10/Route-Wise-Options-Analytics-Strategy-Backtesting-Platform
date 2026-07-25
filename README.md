@@ -1,6 +1,6 @@
 # OpenQuant
 
-> **1st Place Winner — FOSS Club MPSTME CodeForge 2026**
+> **1st Place Winner - FOSS Club MPSTME CodeForge 2026**
 
 OpenQuant is a full-stack options analytics platform for exploring NIFTY derivatives data with interactive visualizations, Greeks, volatility analysis, anomaly detection, strategy design, backtesting, and AI-assisted insights.
 
@@ -154,7 +154,7 @@ CodeForge/
 - Docker and Docker Compose, **or**
 - Python 3.12+, Node.js 20+, `pnpm`, and Redis
 
-## Option A — Run with Docker Compose
+## Option A - Run with Docker Compose
 
 From the project root:
 
@@ -169,7 +169,7 @@ Services:
 - API docs: `http://localhost:8000/docs`
 - Redis: `localhost:6379`
 
-## Option B — Run Locally
+## Option B - Run Locally
 
 ### 1. Backend
 
