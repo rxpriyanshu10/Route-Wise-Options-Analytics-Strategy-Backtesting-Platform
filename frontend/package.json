@@ -1,7 +1,7 @@
 {
-  "name": "niftylens",
+  "name": "optionedge",
   "version": "1.0.0",
-  "description": "NIFTY Options Analytics & Strategy Backtesting Platform",
+  "description": "Options Analytics & Strategy Backtesting Platform",
   "private": true,
   "author": "Priyanshu (rxpriyanshu10) <priyanshurajput178@gmail.com>",
   "scripts": {

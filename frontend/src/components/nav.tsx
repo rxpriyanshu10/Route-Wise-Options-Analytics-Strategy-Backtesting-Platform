@@ -17,7 +17,7 @@ export function Nav() {
   return (
     <nav className="border-b border-(--border) px-4 flex items-center gap-1 h-10 text-xs shrink-0 bg-(--bg) w-full">
       <span className="font-mono font-semibold tracking-tight text-sm mr-4 bg-clip-text text-transparent bg-linear-to-r from-(--fg) to-(--muted)">
-        NiftyLens
+        OptionEdge
       </span>
       <div className="flex items-center gap-0.5">
         {links.map((l) => {
