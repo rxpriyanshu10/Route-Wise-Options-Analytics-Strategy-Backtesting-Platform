@@ -1,6 +1,6 @@
-# OptionEdge: Options Analytics & Strategy Backtesting Platform
+# Route Wise: Options Analytics & Strategy Backtesting Platform
 
-OptionEdge is a full-stack options analytics platform for exploring NIFTY derivatives data with interactive visualizations, Greeks, volatility analysis, anomaly detection, strategy design, backtesting, and AI-assisted insights.
+Route Wise is a full-stack options analytics platform for exploring NIFTY derivatives data with interactive visualizations, Greeks, volatility analysis, anomaly detection, strategy design, backtesting, and AI-assisted insights.
 
 It combines a **FastAPI + Python analytics backend** with a **Next.js 15 + React 19 frontend**, using **Redis** for caching and **OpenRouter** for LLM-powered summaries and strategy recommendations.
 
