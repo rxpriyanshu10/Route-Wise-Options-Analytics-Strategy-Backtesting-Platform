@@ -124,7 +124,7 @@ Expected data fields include values such as:
 ## Repository Structure
 
 ```text
-CodeForge/
+OpenQuant/
 ├── assets/                    # README screenshots
 ├── backend/
 │   ├── main.py                # FastAPI app and API endpoints
@@ -251,6 +251,10 @@ OpenQuant was built to turn dense options data into a usable decision-support sy
 - practical options strategy workflows
 - AI-assisted interpretation
 - fully open-source stack end to end
+
+## Author & Contributor
+
+- **rxpriyanshu10** ([priyanshurajput178@gmail.com](mailto:priyanshurajput178@gmail.com))
 
 ## License
 

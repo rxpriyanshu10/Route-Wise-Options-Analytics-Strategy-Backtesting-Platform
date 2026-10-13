@@ -76,9 +76,22 @@ export default function Dashboard() {
   const [hoveredTime, setHoveredTime] = useState<string | null>(null);
   const { insights, loading: insightsLoading, fetchInferences } = useInferences();
 
-  // Persisted layouts — storage must be undefined during SSR
-  const [storage, setStorage] = useState<Storage | undefined>(undefined);
-  useEffect(() => { setStorage(localStorage); }, []);
+const dummyStorage: Storage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+  clear: () => {},
+  key: () => null,
+  length: 0,
+};
+
+  // Persisted layouts — use dummyStorage during SSR to avoid localStorage ReferenceError
+  const [storage, setStorage] = useState<Storage>(dummyStorage);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setStorage(window.localStorage);
+    }
+  }, []);
   const mainLayout = useDefaultLayout({ id: "dashboard-main", storage });
   const overviewLayout = useDefaultLayout({ id: "dashboard-overview", storage });
   const greeksLayout = useDefaultLayout({ id: "dashboard-greeks", storage });

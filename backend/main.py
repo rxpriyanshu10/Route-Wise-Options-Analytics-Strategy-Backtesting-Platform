@@ -19,7 +19,13 @@ app = FastAPI(title="OpenQuant Options Analytics API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3001"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+    ],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,12 +55,64 @@ df = load_data()
 anomaly_detector = AnomalyDetector()
 anomaly_detector.fit(df)
 
+import time
+
+
+class SafeRedisCache:
+    """Resilient Redis cache with automatic in-memory fallback.
+    
+    If a real Redis instance is reachable, it uses Redis.
+    If Redis is down or unreachable (e.g. running locally without Redis installed),
+    it transparently falls back to an in-memory dictionary with TTL expiration,
+    preventing ConnectionError crashes across all ML and analytics endpoints.
+    """
+
+    def __init__(self, host: str = "localhost", port: int = 6379, db: int = 0):
+        self._host = host
+        self._port = port
+        self._db = db
+        self._memory = {}
+        try:
+            self._client = redis.Redis(
+                host=self._host,
+                port=self._port,
+                db=self._db,
+                decode_responses=True,
+                socket_connect_timeout=0.5,
+                socket_timeout=1.0,
+            )
+        except Exception:
+            self._client = None
+
+    def get(self, key: str):
+        if self._client:
+            try:
+                return self._client.get(key)
+            except Exception:
+                pass
+        # Fallback to local in-memory cache
+        if key in self._memory:
+            val, expiry = self._memory[key]
+            if time.time() < expiry:
+                return val
+            del self._memory[key]
+        return None
+
+    def setex(self, key: str, time_seconds: int, value: str):
+        if self._client:
+            try:
+                return self._client.setex(key, time_seconds, value)
+            except Exception:
+                pass
+        self._memory[key] = (value, time.time() + time_seconds)
+        return True
+
+
 # Redis cache for ML results (TTL = 5 minutes)
-rcache = redis.Redis(
+rcache = SafeRedisCache(
     host=os.environ.get("REDIS_HOST", "localhost"),
     port=int(os.environ.get("REDIS_PORT", "6379")),
     db=0,
-    decode_responses=True,
 )
 ML_CACHE_TTL = 300
 
