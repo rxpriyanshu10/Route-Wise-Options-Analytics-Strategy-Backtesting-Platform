@@ -1,8 +1,6 @@
-# OpenQuant
+# NiftyLens: NIFTY Options Analytics & Strategy Backtesting Platform
 
-> **1st Place Winner - FOSS Club MPSTME CodeForge 2026**
-
-OpenQuant is a full-stack options analytics platform for exploring NIFTY derivatives data with interactive visualizations, Greeks, volatility analysis, anomaly detection, strategy design, backtesting, and AI-assisted insights.
+NiftyLens is a full-stack options analytics platform for exploring NIFTY derivatives data with interactive visualizations, Greeks, volatility analysis, anomaly detection, strategy design, backtesting, and AI-assisted insights.
 
 It combines a **FastAPI + Python analytics backend** with a **Next.js 15 + React 19 frontend**, using **Redis** for caching and **OpenRouter** for LLM-powered summaries and strategy recommendations.
 
@@ -10,13 +8,13 @@ It combines a **FastAPI + Python analytics backend** with a **Next.js 15 + React
 
 ### Dashboard
 
-<img src="assets/dashboard1.png" alt="OpenQuant dashboard screenshot 1" />
-<img src="assets/dashboard2.png" alt="OpenQuant dashboard screenshot 2" />
+<img src="assets/dashboard1.png" alt="NiftyLens dashboard screenshot 1" />
+<img src="assets/dashboard2.png" alt="NiftyLens dashboard screenshot 2" />
 
 ### Strategies
 
-<img src="assets/strategy1.png" alt="OpenQuant strategy screenshot 1"/>
-<img src="assets/strategy2.png" alt="OpenQuant strategy screenshot 2" />
+<img src="assets/strategy1.png" alt="NiftyLens strategy screenshot 1"/>
+<img src="assets/strategy2.png" alt="NiftyLens strategy screenshot 2" />
 
 ## Highlights
 
@@ -124,7 +122,7 @@ Expected data fields include values such as:
 ## Repository Structure
 
 ```text
-OpenQuant/
+NiftyLens/
 ├── assets/                    # README screenshots
 ├── backend/
 │   ├── main.py                # FastAPI app and API endpoints
@@ -241,9 +239,9 @@ REDIS_PORT=6379
 - `lucide-react`
 - `react-resizable-panels`
 
-## Why This Project Won
+## Overview
 
-OpenQuant was built to turn dense options data into a usable decision-support system:
+NiftyLens was built to turn dense options data into a usable decision-support system:
 
 - clear and information-dense UI
 - real quantitative analytics

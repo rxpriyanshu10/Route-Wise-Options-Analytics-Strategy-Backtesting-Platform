@@ -15,7 +15,7 @@ from greeks import implied_volatility, compute_greeks, bs_call, bs_put, RISK_FRE
 from strategies import generate_strategies, compute_custom_payoff
 from backtester import backtest_strategy, optimize_strategy
 
-app = FastAPI(title="OpenQuant Options Analytics API")
+app = FastAPI(title="NiftyLens Options Analytics API")
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,6 +1,7 @@
 {
-  "name": "openquant-frontend",
-  "version": "0.1.0",
+  "name": "niftylens",
+  "version": "1.0.0",
+  "description": "NIFTY Options Analytics & Strategy Backtesting Platform",
   "private": true,
   "author": "Priyanshu (rxpriyanshu10) <priyanshurajput178@gmail.com>",
   "scripts": {

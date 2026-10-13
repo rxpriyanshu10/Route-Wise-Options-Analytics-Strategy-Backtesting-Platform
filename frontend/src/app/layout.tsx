@@ -13,8 +13,8 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OpenQuant Options Analytics",
-  description: "AI-powered options market analytics",
+  title: "NiftyLens | NIFTY Options Analytics & Strategy Backtesting Platform",
+  description: "NIFTY Options Analytics & Strategy Backtesting Platform",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

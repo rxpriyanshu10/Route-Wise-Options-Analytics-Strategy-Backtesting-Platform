@@ -247,7 +247,7 @@ When appropriate to visualize data, use the createChart tool. Always be precise,
           writer.write({
             type: "text-delta",
             id: "t1",
-            delta: `**OpenQuant Derivatives Intelligence**\n\nAvailable dataset contains **${overview?.total_rows?.toLocaleString() ?? "147,000"} options snapshots** covering strikes **${overview?.strike_range?.min ?? 23100} to ${overview?.strike_range?.max ?? 28100}** across expiries: ${overview?.expiries?.join(", ") || defaultExpiry}.\n\nYou can ask:\n- *"Show OI distribution for nearest expiry"*\n- *"What does the put-call ratio trend look like?"*\n- *"Analyze Greeks for ATM strikes"*\n- *"Find arbitrage opportunities across strikes"*`,
+            delta: `**NiftyLens Options Intelligence**\n\nAvailable dataset contains **${overview?.total_rows?.toLocaleString() ?? "147,000"} options snapshots** covering strikes **${overview?.strike_range?.min ?? 23100} to ${overview?.strike_range?.max ?? 28100}** across expiries: ${overview?.expiries?.join(", ") || defaultExpiry}.\n\nYou can ask:\n- *"Show OI distribution for nearest expiry"*\n- *"What does the put-call ratio trend look like?"*\n- *"Analyze Greeks for ATM strikes"*\n- *"Find arbitrage opportunities across strikes"*`,
           });
           writer.write({ type: "text-end", id: "t1" });
         }
